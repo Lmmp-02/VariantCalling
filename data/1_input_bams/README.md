@@ -19,7 +19,7 @@ Para que un BAM sea usable en la mayoría de pipelines:
 
 ## Fuente de datos: GIAB (Genome in a Bottle)
 
-Usamos datasets públicos de **GIAB**, un consorcio liderado por NIST que publica muestras “benchmark” (p. ej. trios familiares) para validar pipelines y modelos. :contentReference[oaicite:1]{index=1}
+Usamos datasets públicos de **GIAB**, un consorcio liderado por NIST que publica muestras “benchmark” (p. ej. trios familiares) para validar pipelines y modelos.
 
 En este proyecto, **nuestro caso base** es:
 - Trio Ashkenazim
@@ -27,7 +27,7 @@ En este proyecto, **nuestro caso base** es:
 - Illumina **2x250**
 - Build **GRCh38**
 
-Los alineamientos “novoalign” de HG003 están indexados públicamente aquí (BAM + BAI + MD5): :contentReference[oaicite:2]{index=2}
+Los alineamientos “novoalign” de HG003 están indexados públicamente aquí (BAM + BAI + MD5):
 
 ---
 
