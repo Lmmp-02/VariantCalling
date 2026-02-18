@@ -50,14 +50,14 @@ conda activate hts
 > Ojo: el BAM completo puede ser muy grande (decenas o >100 GB). Usa -c para reanudar.
 
 ```bash
-mkdir -p data/input_bams/HG003
+mkdir -p data/1_input_bams/HG003
 
 BASE="https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams"
 BAM_URL="$BASE/HG003.GRCh38.2x250.bam"
 BAI_URL="$BASE/HG003.GRCh38.2x250.bam.bai"
 
-wget -c -O data/input_bams/HG003/HG003.GRCh38.2x250.bam     "$BAM_URL"
-wget -c -O data/input_bams/HG003/HG003.GRCh38.2x250.bam.bai "$BAI_URL"
+wget -c -O data/1_input_bams/HG003/HG003.GRCh38.2x250.bam     "$BAM_URL"
+wget -c -O data/1_input_bams/HG003/HG003.GRCh38.2x250.bam.bai "$BAI_URL"
 ```
 
 ---
@@ -69,15 +69,15 @@ Esto funciona porque el BAM remoto tiene índice .bai, lo que permite pedir regi
 ### 1) Extraer chr20 desde el BAM remoto y crear BAM local ordenado + indexado
 
 ```bash
-mkdir -p data/input_bams/HG003
+mkdir -p data/1_input_bams/HG003
 
 BASE="https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/AshkenazimTrio/HG003_NA24149_father/NIST_Illumina_2x250bps/novoalign_bams"
 BAM_URL="$BASE/HG003.GRCh38.2x250.bam"
 
 samtools view -b -@ 8 "$BAM_URL" chr20 \
-  | samtools sort -@ 8 -o data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
+  | samtools sort -@ 8 -o data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
 
-samtools index -@ 8 data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
+samtools index -@ 8 data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
 ```
 
 > Importante: el nombre del contig debe existir tal cual en el BAM (chr20 vs 20). Verifícalo con el header (sección “Inspección”).
@@ -86,9 +86,9 @@ samtools index -@ 8 data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
 
 ```bash
 samtools view -b -@ 8 "$BAM_URL" "chr20:1000000-2000000" \
-  | samtools sort -@ 8 -o data/input_bams/HG003/HG003.GRCh38.2x250.chr20_1-2Mb.bam
+  | samtools sort -@ 8 -o data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20_1-2Mb.bam
 
-samtools index -@ 8 data/input_bams/HG003/HG003.GRCh38.2x250.chr20_1-2Mb.bam
+samtools index -@ 8 data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20_1-2Mb.bam
 ```
 
 ---
@@ -98,14 +98,14 @@ samtools index -@ 8 data/input_bams/HG003/HG003.GRCh38.2x250.chr20_1-2Mb.bam
 ### Header y contigs disponibles
 
 ```bash
-samtools view -H data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head
-samtools view -H data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@SQ' | head -n 30
+samtools view -H data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head
+samtools view -H data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@SQ' | head -n 30
 ```
 
 ### Estadísticas por contig (muy útil para verificar “solo chr20”)
 
 ```bash
-samtools idxstats data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head -n 30
+samtools idxstats data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head -n 30
 ```
 
 Lo esperado: reads > 0 en chr20 y ~0 en el resto.
@@ -113,15 +113,15 @@ Lo esperado: reads > 0 en chr20 y ~0 en el resto.
 ### Conteo de reads en un contig
 
 ```bash
-samtools view -c data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam chr20
-samtools view -c data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam chr1
+samtools view -c data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam chr20
+samtools view -c data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam chr1
 ```
 
 ### Sanity checks (integridad / formato)
 
 ```bash
-samtools quickcheck -v data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
-samtools flagstat data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head -n 30
+samtools quickcheck -v data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam
+samtools flagstat data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head -n 30
 ```
 
 ---
