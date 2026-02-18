@@ -1,0 +1,7 @@
+# Datos Archivos grandes que no queremos versionar
+/data/**/*.bam
+/data/**/*.bai
+
+
+
+
