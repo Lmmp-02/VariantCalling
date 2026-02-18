@@ -1,0 +1,1 @@
+Este directrio es el que usaremos para guardar las salidas de Deep Variant
