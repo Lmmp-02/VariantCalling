@@ -8,3 +8,5 @@
 /data/**/*.bed
 /data/**/*.tbi
 
+# Logs de DeepVariant
+/data/**/logs/
