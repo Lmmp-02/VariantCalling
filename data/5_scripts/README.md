@@ -17,7 +17,7 @@ Este directorio agrupa scripts auxiliares y “runbooks” ejecutables para el c
 
 ---
 
-# Parte 1 — DeepVariant pipeline completo + validación con hap.py (baseline canónico)
+# Parte 1: DeepVariant pipeline completo + validación con hap.py
 
 Objetivo: fijar el baseline “canónico” end-to-end para HG003 chr20:
 
@@ -84,7 +84,7 @@ Si aquí hay mismatch (`20` vs `chr20`), hap.py y/o DV pueden fallar o dar métr
 
 ---
 
-## 1.3 DeepVariant 1.9 — pipeline completo (Docker)
+## 1.3 DeepVariant 1.9: pipeline completo (Docker)
 
 Outputs esperados:
 - `data/4_out/deepvariant/HG003/chr20/HG003.dv1.9.0.chr20.vcf.gz` (+ `.tbi`)
@@ -191,7 +191,7 @@ head -n 30 data/4_out/happy/HG003/chr20/HG003.dv1.9.0.chr20.summary.csv
 
 ---
 
-# Parte 2 — DeepVariant “make_examples only” (placeholder)
+# Parte 2:  DeepVariant “make_examples only” (placeholder)
 
 TODO: Documentar ejecución de DeepVariant para generar únicamente `make_examples` (sin `call_variants` ni `postprocess`).
 
