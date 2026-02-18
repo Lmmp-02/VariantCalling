@@ -30,8 +30,8 @@ Los archivos están publicados en el FTP/HTTPS de GIAB (NIST/NCBI).
 ## Descargar truth set completo (HG003, GRCh38, v4.2.1)
 
 ```bash
-mkdir -p data/truth/HG003
-cd data/truth/HG003
+mkdir -p data/3_truth/HG003
+cd data/3_truth/HG003
 
 BASE="https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG003_NA24149_father/NISTv4.2.1/GRCh38"
 
