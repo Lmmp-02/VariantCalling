@@ -5,5 +5,6 @@
 /data/**/*.fai
 /data/**/*.fa
 /data/**/*.gz
-
+/data/**/*.bed
+/data/**/*.tbi
 
