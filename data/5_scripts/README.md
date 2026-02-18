@@ -128,7 +128,7 @@ docker run --rm \
   --vcf_stats_report=true
 ```
 
-> IMPOTANTE: En el caso de usar el **BAM de ONT**, el `--model_type` deberá ser asignado como `ONT_R104`.  
+> IMPOTANTE: En el caso de usar el **BAM de ONT** el `--model_type` deberá ser asignado como `ONT_R104`.  
 
 ### Monitorizar mientras corre
 
@@ -191,8 +191,8 @@ hap.py \
 ### Ver resultados
 
 ```bash
-ls -lh data/4_out/happy/HG003/chr20 | head
-head -n 30 data/4_out/happy/HG003/Illumina/chr20/HG003.dv1.9.0.chr20.summary.csv
+ls -lh data/4_out/happy/HG003/Illumina/chr20 | head
+head -n 30 data/4_out/happy/HG003/Illumina/chr20/HG003.Illumina.dv1.9.0.chr20.summary.csv
 ```
 
 ---
