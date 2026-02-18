@@ -59,15 +59,15 @@ Para humanos (y algunos otros organismos muy usados), NCBI publica ficheros “p
 Estructura recomendada (para poder convivir con otras referencias en el futuro):
 
 ```bash
-data/reference/
+data/2_reference/
 └── GRCh38_no_alt_plus_hs38d1/
 ```
 
 ### 1) Descargar
 
 ```bash
-mkdir -p data/reference/GRCh38_no_alt_plus_hs38d1
-cd data/reference/GRCh38_no_alt_plus_hs38d1
+mkdir -p data/2_reference/GRCh38_no_alt_plus_hs38d1
+cd data/2_reference/GRCh38_no_alt_plus_hs38d1
 
 REF_GZ="GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz"
 
@@ -133,7 +133,7 @@ Antes de lanzar DeepVariant, verifica que el naming coincide:
 ### BAM 
 
 ```bash
-samtools view -H data/input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@SQ' | head -n 20
+samtools view -H data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@SQ' | head -n 20
 ```
 
 ### Reference
