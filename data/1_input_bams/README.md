@@ -108,7 +108,7 @@ samtools view -H data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@
 samtools idxstats data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | head -n 30
 ```
 
-Lo esperado: reads > 0 en chr20 y ~0 en el resto.
+> Lo esperado: reads > 0 en chr20 y 0 en el resto.
 
 ### Conteo de reads en un contig
 
@@ -116,6 +116,8 @@ Lo esperado: reads > 0 en chr20 y ~0 en el resto.
 samtools view -c data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam chr20
 samtools view -c data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam chr1
 ```
+
+> El primer conteo debería devolver valores, el segundo debería ser 0
 
 ### Sanity checks (integridad / formato)
 
