@@ -83,8 +83,9 @@ curl -L -o "${REF_GZ}" "${REF_URL}"
 
 ```bash
 gunzip -k "${REF_GZ}"
-
 ```
+
+> Podemos eliminar el .gz al terminar, no es necesario a partir de este punto
 
 Esto deja el FASTA como:
 
@@ -133,7 +134,8 @@ Antes de lanzar DeepVariant, verifica que el naming coincide:
 ### BAM 
 
 ```bash
-samtools view -H data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@SQ' | head -n 20
+cd ~/VariantCalling
+samtools view -H ~/VariantCalling/data/1_input_bams/HG003/HG003.GRCh38.2x250.chr20.bam | grep '^@SQ' | head -n 20
 ```
 
 ### Reference
@@ -154,3 +156,34 @@ Si el BAM tiene chr20 y la referencia tiene 20 (o viceversa), algo no cuadra y t
 samtools faidx "${REF}" chr20 > GRCh38_no_alt_plus_hs38d1.chr20.fa
 samtools faidx GRCh38_no_alt_plus_hs38d1.chr20.fa
 ```
+
+### Comprobaciones
+
+```bash
+CHR20_FA="GRCh38_no_alt_plus_hs38d1.chr20.fa"
+
+# 1) Debe haber un único contig (un único header ">")
+grep -c '^>' "${CHR20_FA}"
+
+# 2) Debe llamarse exactamente "chr20"
+grep -n '^>chr20\b' "${CHR20_FA}" || echo "No veo >chr20 en el FASTA recortado"
+
+# 3) El índice .fai debe existir y listar solo chr20
+test -f "${CHR20_FA}.fai" && echo "OK: existe ${CHR20_FA}.fai" || echo "ERROR: falta ${CHR20_FA}.fai"
+cut -f1 "${CHR20_FA}.fai"
+
+# 4) La longitud de chr20 debe coincidir con la referencia completa
+echo "chr20 length (full ref):"
+awk '$1=="chr20"{print $2}' "${REF}.fai"
+echo "chr20 length (chr20-only):"
+awk '$1=="chr20"{print $2}' "${CHR20_FA}.fai"
+
+# 5) Prueba definitiva: extraer un trocito de chr20
+samtools faidx "${CHR20_FA}" chr20:10000000-10000020
+```
+
+Lo esperado:
+- grep -c '^>' devuelve 1
+- cut -f1 "${CHR20_FA}.fai" devuelve solo chr20
+- las dos longitudes de chr20 son iguales
+- el samtools faidx ... imprime una secuencia corta sin errores
