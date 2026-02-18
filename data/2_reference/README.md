@@ -20,11 +20,11 @@ En este proyecto usamos:
 
 **`GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz`** 
 
-> Regla de oro: BAM + referencia FASTA + truth VCF/BED deben ser del **mismo build** y con el **mismo naming de contigs** (p. ej. `chr20` vs `20`).
+> Regla de oro: BAM + referencia FASTA + truth VCF/BED deben ser del **mismo build** y con el **mismo naming** (p. ej. `chr20` vs `20`).
 
 ---
 
-## Nota: ¿qué es `ftp.ncbi.nlm.nih.gov/genomes/all/` y por qué existen rutas tipo `000/001/405`?
+## Nota: Estructura de `ftp.ncbi.nlm.nih.gov/genomes/all/` 
 
 El FTP de NCBI bajo `genomes/all/` es un repositorio masivo con **ensamblados (assemblies) de genomas** de miles de organismos (humanos, ratones, bacterias, plantas, etc.), incluyendo versiones actuales y versiones históricas. Cada ensamblado tiene su propio directorio con un “core set” de ficheros (secuencias, reportes del ensamblado, etc.) y, según el organismo, ficheros adicionales relevantes para pipelines.
 
@@ -35,7 +35,7 @@ NCBI organiza los ensamblados en dos grandes ramas:
 
 Esta estructura se introdujo (y se migró en 2016) para estandarizar rutas y evitar dependencias de paths antiguos. 
 
-### ¿Cómo funciona la estructura de carpetas?
+### ¿Cómo funciona la estructura de subcarpetas?
 NCBI evita meter millones de carpetas en un único directorio creando un árbol de 3 niveles a partir del **número del assembly accession**.
 
 Ejemplo:
@@ -52,15 +52,9 @@ Dentro de ese directorio verás subcarpetas del tipo:
 ### ¿Y el subdirectorio de “alignment pipelines”?
 Para humanos (y algunos otros organismos muy usados), NCBI publica ficheros “preparados para pipelines de alineamiento” (los conocidos **analysis sets**), y UCSC también referencia explícitamente esta idea y su ubicación en NCBI. 
 
-Así que, con todo esto, sabemos que la ruta a la que queremos apuntar para buscar nuestro genoma de referencia en CRCH38 sera:
-
-`https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GRCh38_major_release_seqs_for_alignment_pipelines/`
-
-Y, en concreto, buscamos el archivo de referencia: `GCA_000001405.15_GRCh38_no_alt_plus_hs38d1_analysis_set.fna.gz`
-
 ---
 
-## Descargar la referencia (FASTA .gz), descomprimir y crear `.fai`
+## Descargar la referencia (FASTA `.gz`), descomprimir y crear `.fai`
 
 Estructura recomendada (para poder convivir con otras referencias en el futuro):
 
@@ -150,7 +144,9 @@ cut -f1 "${REF}.fai" | head -n 20
 
 Si el BAM tiene chr20 y la referencia tiene 20 (o viceversa), algo no cuadra y te saldrán errores/VCFs incompatibles.
 
-# (Opcional) Generar un FASTA “solo chr20” para pruebas rápidas
+---
+
+## (Opcional) Generar un FASTA “solo chr20” para pruebas rápidas
 
 Útil para debugging y prototipos regionales; para pipelines generales lo normal es usar la referencia completa.
 
