@@ -95,24 +95,31 @@ Outputs esperados:
 
 ### Ejecutar
 
+Primero, creamos las rutas y referencias correspondientes para nuestra run: 
+
 ```bash
 cd ~/VariantCalling
 
 DV_VERSION="1.9.0"
 SAMPLE="HG003"
-TECHNOLOGY="Illumina"
+TECH="Illumina"
 NUM_SHARDS="$(nproc)"
 
-BAM="data/1_input_bams/${SAMPLE}/${TECHNOLOGY}/${SAMPLE}.GRCh38.2x250.chr20.bam"
+BAM="data/1_input_bams/${SAMPLE}/${TECH}/${SAMPLE}.GRCh38.2x250.chr20.bam"
 REF="data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.chr20.fa"
 
-OUT_DIR="data/4_out/deepvariant/${SAMPLE}/${TECHNOLOGY}/chr20"
+OUT_DIR="data/4_out/deepvariant/${SAMPLE}/${TECH}/chr20"
 LOG_DIR="${OUT_DIR}/logs"
-mkdir -p "${LOG_DIR}"
+INT_DIR="${OUT_DIR}/intermediate"
+mkdir -p "${LOG_DIR}" "${INT_DIR}"
 
-OUT_VCF="${OUT_DIR}/${SAMPLE}.${TECHNOLOGY}.dv${DV_VERSION}.chr20.vcf.gz"
-OUT_GVCF="${OUT_DIR}/${SAMPLE}.${TECHNOLOGY}.dv${DV_VERSION}.chr20.g.vcf.gz"
+OUT_VCF="${OUT_DIR}/${SAMPLE}.${TECH}.dv${DV_VERSION}.chr20.vcf.gz"
+OUT_GVCF="${OUT_DIR}/${SAMPLE}.${TECH}.dv${DV_VERSION}.chr20.g.vcf.gz"
+```
 
+Seguido, lanzamos el pipeline:
+
+```bash
 docker pull google/deepvariant:${DV_VERSION}
 
 docker run --rm \
@@ -125,6 +132,7 @@ docker run --rm \
   --output_vcf="/work/${OUT_VCF}" \
   --output_gvcf="/work/${OUT_GVCF}" \
   --num_shards=${NUM_SHARDS} \
+  --intermediate_results_dir="/work/${INT_DIR}" \
   --logging_dir="/work/${LOG_DIR}" \
   --vcf_stats_report=true
 ```
