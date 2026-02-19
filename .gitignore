@@ -10,3 +10,4 @@
 
 # Logs de DeepVariant
 /data/**/logs/
+/data/**/intermediate/
