@@ -183,7 +183,7 @@ samtools faidx "${CHR20_FA}" chr20:10000000-10000020
 ```
 
 Lo esperado:
-- grep -c '^>' devuelve 1
-- cut -f1 "${CHR20_FA}.fai" devuelve solo chr20
-- las dos longitudes de chr20 son iguales
-- el samtools faidx ... imprime una secuencia corta sin errores
+- `grep -c '^>'` devuelve 1
+- `cut -f1 "${CHR20_FA}.fai"` devuelve solo chr20
+- las dos longitudes de `chr20` son iguales
+- el `samtools faidx ...` imprime una secuencia corta sin errores
