@@ -101,6 +101,7 @@ cd ~/VariantCalling
 DV_VERSION="1.9.0"
 SAMPLE="HG003"
 TECHNOLOGY="Illumina"
+NUM_SHARDS="$(nproc)"
 
 BAM="data/1_input_bams/${SAMPLE}/${TECHNOLOGY}/${SAMPLE}.GRCh38.2x250.chr20.bam"
 REF="data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.chr20.fa"
@@ -123,12 +124,14 @@ docker run --rm \
   --reads="/work/${BAM}" \
   --output_vcf="/work/${OUT_VCF}" \
   --output_gvcf="/work/${OUT_GVCF}" \
-  --num_shards="$(nproc)" \
+  --num_shards=${NUM_SHARDS} \
   --logging_dir="/work/${LOG_DIR}" \
   --vcf_stats_report=true
 ```
 
-> IMPOTANTE: En el caso de usar el **BAM de ONT** el `--model_type` deberá ser asignado como `ONT_R104`.  
+> **IMPORTANTE**: En el caso de usar el **BAM de ONT** el `--model_type` deberá ser asignado como `ONT_R104`.
+
+> **IMPORTANTE**: Por defecto, el número de shards (`NUM_SHARDS`) es igual a la cantidad de cores (máximo rendimiento). Si esto da problemas del tipo: `parallel: This job failed`, entonces se recomienda reducir el valor de los shards a 2 o 4 para asegurar estabilidad. 
 
 ### Monitorizar mientras corre
 
