@@ -178,16 +178,16 @@ conda activate happy
 
 DV_VERSION="1.9.0"
 SAMPLE="HG003"
-TECHNOLOGY="Illumina"
+TECH="Illumina"
 
 REF="data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.chr20.fa"
 TRUTH_VCF="data/3_truth/${SAMPLE}/${SAMPLE}_chr20.truth.vcf.gz"
 TRUTH_BED="data/3_truth/${SAMPLE}/${SAMPLE}_chr20.confident.bed"
 
-QUERY_VCF="data/4_out/deepvariant/${SAMPLE}/${TECHNOLOGY}/chr20/${SAMPLE}.${TECHNOLOGY}.dv${DV_VERSION}.chr20.vcf.gz"
+QUERY_VCF="data/4_out/deepvariant/${SAMPLE}/${TECH}/chr20/${SAMPLE}.${TECH}.dv${DV_VERSION}.chr20.vcf.gz"
 
-OUT_DIR="data/4_out/happy/${SAMPLE}/${TECHNOLOGY}/chr20"
-OUT_PREFIX="${OUT_DIR}/${SAMPLE}.${TECHNOLOGY}.dv${DV_VERSION}.chr20"
+OUT_DIR="data/4_out/happy/${SAMPLE}/${TECH}/chr20"
+OUT_PREFIX="${OUT_DIR}/${SAMPLE}.${TECH}.dv${DV_VERSION}.chr20"
 mkdir -p "${OUT_DIR}"
 
 hap.py \
