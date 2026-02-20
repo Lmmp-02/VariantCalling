@@ -225,6 +225,7 @@ En pruebas iniciales se usó un BAM ONT ultra-long antiguo (R9.4.1).
 No debe usarse como baseline con DeepVariant `--model_type=ONT_R104`, ya que puede degradar mucho el rendimiento (especialmente INDELs).
 
 Naming recomendado:
+
 ```bash
 data/1_input_bams/HG003/ONT_legacy_r9_4_1_ultralong_ucsc2020/
   HG003.GRCh38.ONT_R9_4_1_UL.UCSC_20200508.chr20.bam
@@ -232,9 +233,144 @@ data/1_input_bams/HG003/ONT_legacy_r9_4_1_ultralong_ucsc2020/
 ```
 ---
 
+# Cobertura (coverage) y mosdepth
+
+## ¿Qué es la cobertura en un BAM?
+
+La **cobertura** (coverage / depth) mide **cuántas lecturas cubren cada posición** del genoma.
+- **Depth en un punto**: nº de reads que cubren esa base.
+- **Cobertura media (mean coverage)**: promedio del depth a lo largo de una región (en nuestro caso, `chr20`).
+
+Esto es útil porque:
+- nos da contexto para interpretar métricas (p. ej. comparar Illumina vs ONT con coberturas distintas),
+- nos permite detectar problemas (zonas con coverage muy bajo o muy irregular),
+- nos deja una “foto” rápida del dataset que estamos usando.
+
+Saber el coverage también nos permitirá generar versiones "con menos cobertura" (downsampling) de los BAMs. Estas versiones nos permitirán evaluar la **degradación que sufre Deep Variant** al disponer de **menos informació**n con la que **generar ejemplos** y **clasificar variantes**. 
+
+### ¿Por qué mosdepth?
+
+**mosdepth** es una herramienta que calcula cobertura de forma muy rápida a partir de un BAM indexado, generando:
+- `*.mosdepth.summary.txt` → coverage medio por contig (y otros stats básicos).
+- `*.regions.bed.gz` (si usas `--by`) → coverage por ventanas (ideal para plot).
+
+## Cobertura media en chr20 (mosdepth summary)
+
+### Inputs (BAMs chr20-only)
+
+Ejemplo de paths (ajustar si difieren):
+
+```bash
+ILL_BAM="data/1_input_bams/HG003/Illumina/HG003.GRCh38.2x250.chr20.bam"
+
+# ONT parcial: 1 run (ej: PAY87794)
+ONT_PARTIAL_BAM="data/1_input_bams/HG003/ONT/HG003.GRCh38.ONT_R104_sup_PAY87794.chr20.bam"
+
+# ONT completo: merge PAY87794+PAY87954
+ONT_FULL_BAM="data/1_input_bams/HG003/ONT/HG003.GRCh38.ONT_R104_sup_PAY87794_PAY87954.chr20.bam"
+```
+
+### Ejecutar mosdepth (solo summary)
+> NOTA: No necesitamos explicitar un BEDs para el **mean coverage**: mosdepth ya calcula el summary del BAM completo (en este caso, como el BAM es `chr20-only`, el summary de chr20 es lo que nos interesa).
+
+```bash
+conda activate hts
+cd ~/VariantCalling
+
+THREADS=4
+OUT_BASE="data/4_out/mosdepth/HG003/chr20"
+
+mkdir -p "$OUT_BASE/Illumina" "$OUT_BASE/ONT_PARTIAL" "$OUT_BASE/ONT_FULL"
+
+# Illumina
+mosdepth -t "$THREADS" -n -x \
+  "$OUT_BASE/Illumina/HG003.Illumina.chr20" \
+  "$ILL_BAM"
+
+# ONT (parcial)
+mosdepth -t "$THREADS" -n -x \
+  "$OUT_BASE/ONT_PARTIAL/HG003.ONT.partial.chr20" \
+  "$ONT_PARTIAL_BAM"
+
+# ONT (full/merged)
+mosdepth -t "$THREADS" -n -x \
+  "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20" \
+  "$ONT_FULL_BAM"
+```
+
+Flags usados:
+
+- `-n` → no genera per-base (más rápido y menos disco).
+
+- `-x` → fast-mode (suficiente para visión general de cobertura).
+
+- `-t` → threads (principalmente descompresión; 4 suele ser suficiente).
+
+### Leer el mean coverage de chr20
+
+```bash
+echo "Illumina chr20:"
+grep -w '^chr20' "$OUT_BASE/Illumina/HG003.Illumina.chr20.mosdepth.summary.txt"
+
+echo "ONT partial chr20:"
+grep -w '^chr20' "$OUT_BASE/ONT_PARTIAL/HG003.ONT.partial.chr20.mosdepth.summary.txt"
+
+echo "ONT full chr20:"
+grep -w '^chr20' "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20.mosdepth.summary.txt"
+```
+
+En nuestro caso (ejemplo real de esta PoC):
+- Illumina: **60.60×**
+- ONT partial: **41.03×**
+- ONT full: **75.01×**
+
+## Cobertura a lo largo de chr20 (ventanas 10kb)
+
+Para visualizar cómo cambia la cobertura a lo largo de chr20 (y detectar “dropouts”), generamos cobertura por **ventanas de 10kb**. Esto produce el fichero:  `HG003.<name>.chr20.win10000.regions.bed.gz` que luego usamos para plot.
+
+### Generar ventanas 10kb (mosdepth --by 10000)
+
+```bash
+WIN=10000
+
+# Illumina
+mosdepth -t "$THREADS" -n -x --by "$WIN" \
+  "$OUT_BASE/Illumina/HG003.Illumina.chr20.win${WIN}" \
+  "$ILL_BAM"
+
+# ONT partial
+mosdepth -t "$THREADS" -n -x --by "$WIN" \
+  "$OUT_BASE/ONT_PARTIAL/HG003.ONT.partial.chr20.win${WIN}" \
+  "$ONT_PARTIAL_BAM"
+
+# ONT full
+mosdepth -t "$THREADS" -n -x --by "$WIN" \
+  "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20.win${WIN}" \
+  "$ONT_FULL_BAM"
+```
+
+## Plot de cobertura (script)
+
+Tenemos un script para plotear la cobertura por ventanas 10kb:
+
+- Script: `data/4_out/mosdepth/plot_coverage.py`
+
+- Inputs esperados:
+`data/4_out/mosdepth/HG003/chr20/<FOLDER>/HG003.<name>.chr20.win10000.regions.bed.gz`
+
+- Output generado:
+`data/4_out/mosdepth/HG003/chr20/<FOLDER>/coverage_<name>.png`
+
+Ejemplos:
+
+```bash
+python3 data/4_out/mosdepth/plot_coverage.py --folder Illumina
+python3 data/4_out/mosdepth/plot_coverage.py --folder ONT_PARTIAL
+python3 data/4_out/mosdepth/plot_coverage.py --folder ONT_FULL
+```
+
 ## To be added (pendiente)
 
-- Medir cobertura con mosdepth (WGS vs recortes, y comparativa por región).
 - Downsampling (p. ej. para simular distintas coberturas).
 - Recortar regiones con BED (subconjuntos “difíciles” / “fáciles”).
 
