@@ -11,3 +11,4 @@
 # Logs de DeepVariant
 /data/**/logs/
 /data/**/intermediate/
+/data/**/mosdepth/**/*dist*
