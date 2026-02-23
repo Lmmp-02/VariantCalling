@@ -1,10 +1,10 @@
 # Índice
-- [BAMs (Aligned reads)](#bams-aligned-reads)
-- [1) Illumina (NCBI FTP)](#1-illumina-ncbi-ftp)
-- [2) ONT (ONT Open Data, AWS S3)](#2-ont-ont-open-data-aws-s3)
-- [Inspeccionar BAMs (checks rápidos)](#inspeccionar-bams-checks-rápidos)
-- [Cobertura (coverage) y mosdepth](#cobertura-coverage-y-mosdepth)
-- [Downsampling de BAMs (simular menor cobertura)](#downsampling-de-bams-simular-menor-cobertura)
+- [BAMs](#bams-aligned-reads)
+- [Dataset Illumina (short-reads)](#1-illumina-ncbi-ftp)
+- [Dataset ONT (long-reads)](#2-ont-ont-open-data-aws-s3)
+- [Inspeccionar BAMs](#inspeccionar-bams-checks-rápidos)
+- [Cobertura y mosdepth](#cobertura-coverage-y-mosdepth)
+- [Downsampling de BAMs](#downsampling-de-bams-simular-menor-cobertura)
 
 ---
 
