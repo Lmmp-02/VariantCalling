@@ -283,26 +283,24 @@ OUT_BASE="data/4_out/mosdepth/HG003/chr20"
 mkdir -p "$OUT_BASE/Illumina" "$OUT_BASE/ONT_PARTIAL" "$OUT_BASE/ONT_FULL"
 
 # Illumina
-mosdepth -t "$THREADS" -n -x \
+mosdepth -t "$THREADS" -n \
   "$OUT_BASE/Illumina/HG003.Illumina.chr20" \
   "$ILL_BAM"
 
 # ONT (parcial)
-mosdepth -t "$THREADS" -n -x \
+mosdepth -t "$THREADS" -n \
   "$OUT_BASE/ONT_PARTIAL/HG003.ONT.partial.chr20" \
   "$ONT_PARTIAL_BAM"
 
 # ONT (full/merged)
-mosdepth -t "$THREADS" -n -x \
+mosdepth -t "$THREADS" -n \
   "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20" \
   "$ONT_FULL_BAM"
 ```
 
 Flags usados:
 
-- `-n` → no genera per-base (más rápido y menos disco).
-
-- `-x` → fast-mode (suficiente para visión general de cobertura).
+- `-n` → no genera per-base (más rápido y realiza menos opearciones en disco).
 
 - `-t` → threads (principalmente descompresión; 4 suele ser suficiente).
 
@@ -320,9 +318,9 @@ grep -w '^chr20' "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20.mosdepth.summary.txt"
 ```
 
 En nuestro caso (ejemplo real de esta PoC):
-- Illumina: **60.60×**
-- ONT partial: **41.03×**
-- ONT full: **75.01×**
+- Illumina: **48.61×**
+- ONT partial: **40.63×**
+- ONT full: **74.35×**
 
 ## Cobertura a lo largo de chr20 (ventanas 10kb)
 
@@ -334,17 +332,17 @@ Para visualizar cómo cambia la cobertura a lo largo de chr20 (y detectar “dro
 WIN=10000
 
 # Illumina
-mosdepth -t "$THREADS" -n -x --by "$WIN" \
+mosdepth -t "$THREADS" -n --by "$WIN" \
   "$OUT_BASE/Illumina/HG003.Illumina.chr20.win${WIN}" \
   "$ILL_BAM"
 
 # ONT partial
-mosdepth -t "$THREADS" -n -x --by "$WIN" \
+mosdepth -t "$THREADS" -n --by "$WIN" \
   "$OUT_BASE/ONT_PARTIAL/HG003.ONT.partial.chr20.win${WIN}" \
   "$ONT_PARTIAL_BAM"
 
 # ONT full
-mosdepth -t "$THREADS" -n -x --by "$WIN" \
+mosdepth -t "$THREADS" -n --by "$WIN" \
   "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20.win${WIN}" \
   "$ONT_FULL_BAM"
 ```
