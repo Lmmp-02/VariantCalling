@@ -1,5 +1,5 @@
 # Índice
-- [BAMs (Aligned reads)](#bams-a reads))
+- [BAMs (Aligned reads)](#bams-aligned-reads)
 - [1) Illumina (NCBI FTP)](#1-illumina-ncbi-ftp)
 - [2) ONT (ONT Open Data, AWS S3)](#2-ont-ont-open-data-aws-s3)
 - [Inspeccionar BAMs (checks rápidos)](#inspeccionar-bams-checks-rápidos)
