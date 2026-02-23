@@ -319,7 +319,7 @@ grep -w '^chr20' "$OUT_BASE/ONT_FULL/HG003.ONT.full.chr20.mosdepth.summary.txt"
 
 En nuestro caso (ejemplo real de esta PoC):
 - Illumina: **48.61×**
-- ONT partial: **40.63×**
+- ONT partial: **40.67×**
 - ONT full: **74.35×**
 
 ## Cobertura a lo largo de chr20 (ventanas 10kb)
