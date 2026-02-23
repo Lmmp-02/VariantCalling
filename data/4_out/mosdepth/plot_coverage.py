@@ -2,7 +2,7 @@
 """
 Este script permite generar un plot que muestra la cobertura (depth) disponible a lo largo de un BAM. Sirve para dar información más detallada que el summary que saca mosdepth habitualmente. 
 Se lanza como: 
-    python  python3 data/4_out/mosdepth/plot_coverage.py --folder "tu_folder"
+    python  python3 data/4_out/mosdepth/plot_coverage.py --folder "Illumina/ONT_FULL/ONT_PARTIAL"
 
 Previo a lanzar este script, se ha tenido que hacer el análisis de cobertura por ventanas usando mosdepth:
 
