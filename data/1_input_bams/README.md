@@ -1,3 +1,13 @@
+# Índice
+- [BAMs (Aligned reads)](#bams-a reads))
+- [1) Illumina (NCBI FTP)](#1-illumina-ncbi-ftp)
+- [2) ONT (ONT Open Data, AWS S3)](#2-ont-ont-open-data-aws-s3)
+- [Inspeccionar BAMs (checks rápidos)](#inspeccionar-bams-checks-rápidos)
+- [Cobertura (coverage) y mosdepth](#cobertura-coverage-y-mosdepth)
+- [Downsampling de BAMs (simular menor cobertura)](#downsampling-de-bams-simular-menor-cobertura)
+
+---
+
 # BAMs (Aligned reads)
 
 Un **BAM** (Binary Alignment/Map) es un archivo binario comprimido que contiene **lecturas de secuenciación (reads)** alineadas contra un **genoma de referencia**. Es la versión binaria de un SAM, e incluye (entre otras cosas):
@@ -367,9 +377,106 @@ python3 data/4_out/mosdepth/plot_coverage.py --folder ONT_PARTIAL
 python3 data/4_out/mosdepth/plot_coverage.py --folder ONT_FULL
 ```
 
+---
+
+# Downsampling de BAMs (simular menor cobertura)
+
+## Objetivo
+
+Queremos medir **cuánto se degrada DeepVariant** cuando baja la cobertura del BAM.  
+Para ello generamos versiones “recortadas” (**downsampled**) de los BAMs `chr20-only` manteniendo:
+
+- un **set base** de coberturas: **30× / 15× / 10× / 5×** (seed base = `42`)
+- **replicados opcionales** (seeds extra) para estimar variabilidad por muestreo: p. ej. `123` y `2026` en **10× y 5×**.
+
+Este downsampling lo aplicamos tanto a:
+- **Illumina chr20**
+- **ONT partial chr20** (1 run)
+
+> Nota importante: el **mean coverage** usado para calcular el downsampling se lee siempre desde el `*.mosdepth.summary.txt` (cálculo “correcto”, consistente con nuestros summaries actuales).  
+> El script genera ese summary si no existe.
+
+---
+
+## Idea técnica (cómo funciona)
+
+1) Medimos la cobertura original del BAM con **mosdepth** y leemos el valor `total` del `*.mosdepth.summary.txt`.
+
+2) Para una cobertura objetivo `T` (por ejemplo `15×`), calculamos la fracción:
+
+```math
+\mathrm{FRAC} = \frac{\mathrm{TARGET}}{\mathrm{mean\_orig}}
+```
+
+3) Hacemos downsample con **samtools** usando: `samtools view -s SEED.FRAC`
+
+donde `SEED` fija el muestreo (reproducible) y `FRAC` es la fracción de lecturas/templates.
+
+5) Ordenamos, indexamos y validamos:  `samtools sort`, `samtools index` y `samtools quickcheck`
+
+Volvemos a ejecutar **mosdepth** sobre el BAM downsampleado para verificar que el mean queda cerca del target.
+
+---
+
+## Script: `downsample.sh`
+
+- **Ubicación:** `data/1_input_bams/downsample.sh`
+- **Requisitos:** entorno con `samtools` + `mosdepth` (en este repo usamos conda env `hts`).
+
+### Preparación
+
+```bash
+cd ~/VariantCalling
+chmod +x data/1_input_bams/downsample.sh
+```
+
+### Ejecutar (set base con seed 42)
+
+Genera para **Illumina** y **ONT_partial**:
+
+- 30× / 15× / 10× / 5× con `seed=42`
+- y recalcula/valida cobertura con mosdepth
+
+```bash
+./data/1_input_bams/downsample.sh
+```
+
+## Ejecutar con replicados (seeds extra)
+
+Además de lo anterior, genera seeds extra (por defecto `123` y `2026`) para `10×` y `5×`:
+
+```bash
+RUN_EXTRA=1 ./data/1_input_bams/downsample.sh
+```
+---
+
+## Outputs (convención de nombres)
+### BAMs downsampleados
+
+Se guardan aquí:
+- `data/1_input_bams/HG003/downsampled/ILLUMINA_chr20/`
+- `data/1_input_bams/HG003/downsampled/ONT_partial_chr20/`
+
+Naming:
+- `HG003.ILLUMINA.chr20.<TARGET>x.s<SEED>.bam`
+- `HG003.ONT_partial.chr20.<TARGET>x.s<SEED>.bam`
+
+Cada BAM se genera junto con su índice `.bai`.
+
+### mosdepth (validación de coverage)
+
+Se guardan aquí:
+- `data/4_out/mosdepth/HG003/chr20/downsampled/ILLUMINA/`
+- `data/4_out/mosdepth/HG003/chr20/downsampled/ONT_partial/`
+
+Incluye:
+- coverage original (si no existía): `ILLUMINA_orig.mosdepth.summary.txt` y `ONT_partial_orig.mosdepth.summary.txt`
+- y para cada run downsampleado: `<TECH>_<TARGET>x_s<SEED>.mosdepth.summary.txt`
+
+---
+
 ## To be added (pendiente)
 
-- Downsampling (p. ej. para simular distintas coberturas).
 - Recortar regiones con BED (subconjuntos “difíciles” / “fáciles”).
 
 ---
