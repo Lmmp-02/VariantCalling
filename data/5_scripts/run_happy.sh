@@ -88,8 +88,8 @@ OUT_DIR="data/4_out/happy/${SAMPLE}/${OUT_TECH_FOLDER}/${REGION}/${RUN_TAG}"
 mkdir -p "$OUT_DIR"
 OUT_PREFIX="${OUT_DIR}/happy"
 
-SUMMARY="${OUT_DIR}/summary.csv"
-EXTENDED="${OUT_DIR}/extended.csv"
+SUMMARY="${OUT_DIR}/happy.summary.csv"
+EXTENDED="${OUT_DIR}/happy.extended.csv"
 CONFIG_JSON="${OUT_DIR}/run_config.json"
 
 write_config_json () {
@@ -135,5 +135,5 @@ hap.py \
   --threads "$THREADS"
 
 # Normalize to fixed names
-if [[ -f "${OUT_PREFIX}.summary.csv" ]]; then cp "${OUT_PREFIX}.summary.csv" "$SUMMARY"; fi
-if [[ -f "${OUT_PREFIX}.extended.csv" ]]; then cp "${OUT_PREFIX}.extended.csv" "$EXTENDED"; fi
+#if [[ -f "${OUT_PREFIX}.summary.csv" ]]; then cp "${OUT_PREFIX}.summary.csv" "$SUMMARY"; fi
+#if [[ -f "${OUT_PREFIX}.extended.csv" ]]; then cp "${OUT_PREFIX}.extended.csv" "$EXTENDED"; fi
