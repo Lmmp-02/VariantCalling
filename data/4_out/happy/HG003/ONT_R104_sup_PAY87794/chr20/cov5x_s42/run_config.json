@@ -1,0 +1,16 @@
+{
+  "tool": "hap.py",
+  "sample": "HG003",
+  "tech_arg": "ONT",
+  "out_tech_folder": "ONT_R104_sup_PAY87794",
+  "region": "chr20",
+  "coverage": "5",
+  "seed": "42",
+  "threads": 14,
+  "ref": "data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.chr20.fa",
+  "truth_vcf": "data/3_truth/HG003/HG003_chr20.truth.vcf.gz",
+  "truth_bed": "data/3_truth/HG003/HG003_chr20.confident.bed",
+  "query_vcf": "data/4_out/deepvariant/HG003/ONT_R104_sup_PAY87794/chr20/cov5x_s42/output.vcf.gz",
+  "out_dir": "data/4_out/happy/HG003/ONT_R104_sup_PAY87794/chr20/cov5x_s42",
+  "out_prefix": "data/4_out/happy/HG003/ONT_R104_sup_PAY87794/chr20/cov5x_s42/happy"
+}
