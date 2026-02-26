@@ -27,3 +27,8 @@
 !data/4_out/mosdepth/HG003/chr20/ONT_FULL/HG003.ONT.full.chr20.mosdepth.summary.txt
 
 /data/4_out/mosdepth/HG003/chr20/downsampled/**
+
+
+# Resultados de make_examples en modo train
+/data/4_out/deepvariant/HG003/make_examples_train/
+/data/4_out/datasets/
