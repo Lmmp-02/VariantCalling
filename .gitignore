@@ -19,8 +19,8 @@
 !data/4_out/mosdepth/HG003/chr20/Illumina/HG003.Illumina.chr20.mosdepth.summary.txt
 
 /data/4_out/mosdepth/HG003/chr20/ONT/*
-!data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/coverage_ONT.png
-!data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/HG003.ONT.chr20.mosdepth.summary.txt
+!data/4_out/mosdepth/HG003/chr20/ONT/coverage_ONT.png
+!data/4_out/mosdepth/HG003/chr20/ONT/HG003.ONT.chr20.mosdepth.summary.txt
 
 
 /data/4_out/mosdepth/HG003/chr20/downsampled/**
