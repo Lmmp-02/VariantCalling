@@ -18,13 +18,10 @@
 !data/4_out/mosdepth/HG003/chr20/Illumina/coverage_Illumina.png
 !data/4_out/mosdepth/HG003/chr20/Illumina/HG003.Illumina.chr20.mosdepth.summary.txt
 
-/data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/*
-!data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/coverage_ONT.partial.png
-!data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/HG003.ONT.partial.chr20.mosdepth.summary.txt
+/data/4_out/mosdepth/HG003/chr20/ONT/*
+!data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/coverage_ONT.png
+!data/4_out/mosdepth/HG003/chr20/ONT_PARTIAL/HG003.ONT.chr20.mosdepth.summary.txt
 
-/data/4_out/mosdepth/HG003/chr20/ONT_FULL/*
-!data/4_out/mosdepth/HG003/chr20/ONT_FULL/coverage_ONT.full.png
-!data/4_out/mosdepth/HG003/chr20/ONT_FULL/HG003.ONT.full.chr20.mosdepth.summary.txt
 
 /data/4_out/mosdepth/HG003/chr20/downsampled/**
 
