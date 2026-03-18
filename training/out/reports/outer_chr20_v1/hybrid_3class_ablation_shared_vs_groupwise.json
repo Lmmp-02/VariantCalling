@@ -1,0 +1,122 @@
+{
+  "Hybrid Linear": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_linear_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9987568136176723,
+      "macro_precision": 0.9990208985735313,
+      "macro_recall": 0.9976373992939166,
+      "macro_f1": 0.998326429964166,
+      "weighted_f1": 0.9987554090810279,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          32,
+          4797,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_mlp_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9988524433393898,
+      "macro_precision": 0.9990636429244425,
+      "macro_recall": 0.9978444386313906,
+      "macro_f1": 0.9984518919842588,
+      "weighted_f1": 0.9988512899071701,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          29,
+          4800,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid Groupwise Linear": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_groupwise_linear_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9989161964872015,
+      "macro_precision": 0.9990921450033108,
+      "macro_recall": 0.9979824648563734,
+      "macro_f1": 0.9985354988024219,
+      "weighted_f1": 0.9989151972003635,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          27,
+          4802,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid Groupwise MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_groupwise_mlp_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9989799496350132,
+      "macro_precision": 0.9991206517597667,
+      "macro_recall": 0.9981204910813561,
+      "macro_f1": 0.9986190780188471,
+      "weighted_f1": 0.9989790938975756,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          25,
+          4804,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  }
+}

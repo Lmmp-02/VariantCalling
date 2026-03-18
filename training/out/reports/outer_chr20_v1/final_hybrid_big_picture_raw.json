@@ -1,0 +1,122 @@
+{
+  "Hybrid shared MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_mlp_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9988524433393898,
+      "macro_precision": 0.9990636429244425,
+      "macro_recall": 0.9978444386313906,
+      "macro_f1": 0.9984518919842588,
+      "weighted_f1": 0.9988512899071701,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          29,
+          4800,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid groupwise MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_groupwise_mlp_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9989799496350132,
+      "macro_precision": 0.9991206517597667,
+      "macro_recall": 0.9981204910813561,
+      "macro_f1": 0.9986190780188471,
+      "weighted_f1": 0.9989790938975756,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          25,
+          4804,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid 2-stage shared raw": {
+    "path": "training/out/reports/outer_chr20_v1/two_stage_shared_raw_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9906601638455899,
+      "macro_precision": 0.9806442545745866,
+      "macro_recall": 0.9957313260724238,
+      "macro_f1": 0.9879121166895302,
+      "weighted_f1": 0.9907615704849173,
+      "cm": [
+        [
+          23192,
+          285,
+          6
+        ],
+        [
+          1,
+          4828,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid 2-stage groupwise raw": {
+    "path": "training/out/reports/outer_chr20_v1/two_stage_groupwise_raw_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9932102897580568,
+      "macro_precision": 0.9858734097867399,
+      "macro_recall": 0.9968668993239956,
+      "macro_f1": 0.9912184450167025,
+      "weighted_f1": 0.9932663456989367,
+      "cm": [
+        [
+          23272,
+          210,
+          1
+        ],
+        [
+          1,
+          4828,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  }
+}

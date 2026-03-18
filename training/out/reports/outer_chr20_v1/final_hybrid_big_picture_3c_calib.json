@@ -1,0 +1,122 @@
+{
+  "Hybrid shared MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_mlp_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9988524433393898,
+      "macro_precision": 0.9990636429244425,
+      "macro_recall": 0.9978444386313906,
+      "macro_f1": 0.9984518919842588,
+      "weighted_f1": 0.9988512899071701,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          29,
+          4800,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid groupwise MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_groupwise_mlp_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9989799496350132,
+      "macro_precision": 0.9991206517597667,
+      "macro_recall": 0.9981204910813561,
+      "macro_f1": 0.9986190780188471,
+      "weighted_f1": 0.9989790938975756,
+      "cm": [
+        [
+          23477,
+          6,
+          0
+        ],
+        [
+          25,
+          4804,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid 2-stage shared 3c-calib": {
+    "path": "training/out/reports/outer_chr20_v1/two_stage_shared_3c_calib_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9988524433393898,
+      "macro_precision": 0.9992842787310624,
+      "macro_recall": 0.9976251648440039,
+      "macro_f1": 0.998450899491274,
+      "weighted_f1": 0.9988509068727421,
+      "cm": [
+        [
+          23481,
+          2,
+          0
+        ],
+        [
+          33,
+          4796,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  },
+  "Hybrid 2-stage groupwise 3c-calib": {
+    "path": "training/out/reports/outer_chr20_v1/two_stage_groupwise_3c_calib_test.json",
+    "slice": "groups:1,10,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9989161964872015,
+      "macro_precision": 0.9991471814482421,
+      "macro_recall": 0.9979276464095267,
+      "macro_f1": 0.9985352647026434,
+      "weighted_f1": 0.9989151068458639,
+      "cm": [
+        [
+          23478,
+          5,
+          0
+        ],
+        [
+          28,
+          4801,
+          1
+        ],
+        [
+          0,
+          0,
+          3058
+        ]
+      ],
+      "n": 31371
+    }
+  }
+}

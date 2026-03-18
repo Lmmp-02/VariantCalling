@@ -1,0 +1,170 @@
+{
+  "DV ONT": {
+    "path": "training/out/reports/outer_chr20_v1/dv_ont_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9981853868088731,
+      "precision": 0.9994785555990092,
+      "recall": 0.9941649377593361,
+      "f1": 0.9968146655398817,
+      "specificity": 0.9997926494220103,
+      "fpr": 0.00020735057798973615,
+      "cm": [
+        [
+          19287,
+          4
+        ],
+        [
+          45,
+          7667
+        ]
+      ],
+      "n": 27003
+    }
+  },
+  "ONT Linear": {
+    "path": "training/out/reports/outer_chr20_v1/ont_only_linear_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9986668147983557,
+      "precision": 0.9980534648325979,
+      "recall": 0.9972769709543569,
+      "f1": 0.9976650668050331,
+      "specificity": 0.9992224353325385,
+      "fpr": 0.0007775646674615106,
+      "cm": [
+        [
+          19276,
+          15
+        ],
+        [
+          21,
+          7691
+        ]
+      ],
+      "n": 27003
+    }
+  },
+  "ONT MLP": {
+    "path": "training/out/reports/outer_chr20_v1/ont_only_mlp_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9986668147983557,
+      "precision": 0.9994794377928162,
+      "recall": 0.995850622406639,
+      "f1": 0.9976617303195635,
+      "specificity": 0.9997926494220103,
+      "fpr": 0.00020735057798973615,
+      "cm": [
+        [
+          19287,
+          4
+        ],
+        [
+          32,
+          7680
+        ]
+      ],
+      "n": 27003
+    }
+  },
+  "Hybrid Linear": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_linear_ontvis_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9986668147983557,
+      "precision": 0.9994794377928162,
+      "recall": 0.995850622406639,
+      "f1": 0.9976617303195635,
+      "specificity": 0.9997926494220103,
+      "fpr": 0.00020735057798973615,
+      "cm": [
+        [
+          19287,
+          4
+        ],
+        [
+          32,
+          7680
+        ]
+      ],
+      "n": 27003
+    }
+  },
+  "Hybrid MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_mlp_ontvis_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9987779135651594,
+      "precision": 0.999479640952257,
+      "recall": 0.9962396265560166,
+      "f1": 0.9978570037015391,
+      "specificity": 0.9997926494220103,
+      "fpr": 0.00020735057798973615,
+      "cm": [
+        [
+          19287,
+          4
+        ],
+        [
+          29,
+          7683
+        ]
+      ],
+      "n": 27003
+    }
+  },
+  "Hybrid Groupwise Linear": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_groupwise_linear_ontvis_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.9988519794096952,
+      "precision": 0.9994797763038107,
+      "recall": 0.9964989626556017,
+      "f1": 0.9979871436919681,
+      "specificity": 0.9997926494220103,
+      "fpr": 0.00020735057798973615,
+      "cm": [
+        [
+          19287,
+          4
+        ],
+        [
+          27,
+          7685
+        ]
+      ],
+      "n": 27003
+    }
+  },
+  "Hybrid Groupwise MLP": {
+    "path": "training/out/reports/outer_chr20_v1/hybrid_groupwise_mlp_ontvis_test.json",
+    "slice": "groups:1,11",
+    "split": "test",
+    "metrics": {
+      "acc": 0.998926045254231,
+      "precision": 0.9994799115849694,
+      "recall": 0.9967582987551867,
+      "f1": 0.9981172498863857,
+      "specificity": 0.9997926494220103,
+      "fpr": 0.00020735057798973615,
+      "cm": [
+        [
+          19287,
+          4
+        ],
+        [
+          25,
+          7687
+        ]
+      ],
+      "n": 27003
+    }
+  }
+}
