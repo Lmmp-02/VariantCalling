@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd ~/VariantCalling
+#cd ~/VariantCalling
 
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate happy
@@ -135,5 +135,5 @@ hap.py \
   --threads "$THREADS"
 
 # Normalize to fixed names
-#if [[ -f "${OUT_PREFIX}.summary.csv" ]]; then cp "${OUT_PREFIX}.summary.csv" "$SUMMARY"; fi
-#if [[ -f "${OUT_PREFIX}.extended.csv" ]]; then cp "${OUT_PREFIX}.extended.csv" "$EXTENDED"; fi
+if [[ -f "${OUT_PREFIX}.summary.csv" ]]; then cp "${OUT_PREFIX}.summary.csv" "$SUMMARY"; fi
+if [[ -f "${OUT_PREFIX}.extended.csv" ]]; then cp "${OUT_PREFIX}.extended.csv" "$EXTENDED"; fi
