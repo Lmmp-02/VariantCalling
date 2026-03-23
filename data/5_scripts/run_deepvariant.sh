@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd ~/VariantCalling
+#cd ~/VariantCalling
 
 # -----------------------
 # Defaults (editables)
@@ -86,7 +86,7 @@ case "$TECH" in
       BAM="$ILLUMINA_ORIG_BAM_DEFAULT"
     else
       [[ "$SEED" != "orig" ]] || die "Downsampled cov=$COV requires --seed"
-      BAM="${DOWNSAMPLED_BASE_DEFAULT}/ILLUMINA_chr20/HG003.ILLUMINA.chr20.${COV}x.s${SEED}.bam"
+      BAM="${DOWNSAMPLED_BASE_DEFAULT}/Illumina/HG003.Illumina.chr20.${COV}x.s${SEED}.bam"
     fi
     ;;
   ONT)
@@ -96,7 +96,7 @@ case "$TECH" in
       BAM="$ONT_ORIG_BAM_DEFAULT"
     else
       [[ "$SEED" != "orig" ]] || die "Downsampled cov=$COV requires --seed"
-      BAM="${DOWNSAMPLED_BASE_DEFAULT}/ONT_partial_chr20/HG003.ONT_partial.chr20.${COV}x.s${SEED}.bam"
+      BAM="${DOWNSAMPLED_BASE_DEFAULT}/ONT/HG003.ONT.chr20.${COV}x.s${SEED}.bam"
     fi
     ;;
   *) die "Unsupported tech: $TECH (use Illumina or ONT)";;
