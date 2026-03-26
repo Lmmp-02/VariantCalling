@@ -1,0 +1,20 @@
+{
+  "tool": "deepvariant",
+  "dv_version": "1.9.0",
+  "docker_image": "google/deepvariant:1.9.0",
+  "sample": "HG003",
+  "tech_arg": "Illumina",
+  "out_tech_folder": "Illumina",
+  "model_type": "WGS",
+  "region": "chr20",
+  "coverage": "15",
+  "seed": "42",
+  "threads": 12,
+  "bam": "data/1_input_bams/HG003/downsampled/Illumina/HG003.Illumina.chr20.15x.s42.bam",
+  "ref": "data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.chr20.fa",
+  "out_dir": "data/4_out/deepvariant/HG003/Illumina/chr20/cov15x_s42",
+  "out_vcf": "data/4_out/deepvariant/HG003/Illumina/chr20/cov15x_s42/output.vcf.gz",
+  "out_gvcf": "data/4_out/deepvariant/HG003/Illumina/chr20/cov15x_s42/output.g.vcf.gz",
+  "intermediate_results_dir": "data/4_out/deepvariant/HG003/Illumina/chr20/cov15x_s42/intermediate",
+  "logging_dir": "data/4_out/deepvariant/HG003/Illumina/chr20/cov15x_s42/logs"
+}

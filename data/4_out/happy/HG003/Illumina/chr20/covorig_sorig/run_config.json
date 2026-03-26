@@ -1,0 +1,16 @@
+{
+  "tool": "hap.py",
+  "sample": "HG003",
+  "tech_arg": "Illumina",
+  "out_tech_folder": "Illumina",
+  "region": "chr20",
+  "coverage": "orig",
+  "seed": "orig",
+  "threads": 12,
+  "ref": "data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.chr20.fa",
+  "truth_vcf": "data/3_truth/HG003/HG003_chr20.truth.vcf.gz",
+  "truth_bed": "data/3_truth/HG003/HG003_chr20.confident.bed",
+  "query_vcf": "data/4_out/deepvariant/HG003/Illumina/chr20/covorig_sorig/output.vcf.gz",
+  "out_dir": "data/4_out/happy/HG003/Illumina/chr20/covorig_sorig",
+  "out_prefix": "data/4_out/happy/HG003/Illumina/chr20/covorig_sorig/happy"
+}
