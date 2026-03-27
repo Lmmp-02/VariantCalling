@@ -89,7 +89,7 @@ def plot_coverage(label: str, prefix: str) -> None:
 
     plt.figure(figsize=(12, 4))
     plt.plot(df["mid_mb"].to_numpy(), df["depth_smooth"].to_numpy(), linewidth=2, label="Smoothed coverage")
-    plt.axhline(mean_depth, linestyle="--", linewidth=1.5, color="orange", label=f"Mean depth = {mean_depth:.2f}x")
+    plt.axhline(mean_depth, linestyle="--", linewidth=1.5, color="black", label=f"Mean depth = {mean_depth:.2f}x")
 
     plt.xlabel("chr20 position (Mb)")
     plt.ylabel("Mean depth (X)")
