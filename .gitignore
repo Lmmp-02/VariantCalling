@@ -12,20 +12,6 @@
 /data/**/logs/
 /data/**/intermediate/
 
-
-# Resultados del análisis con mosdepth
-/data/4_out/mosdepth/HG003/chr20/Illumina/*
-!data/4_out/mosdepth/HG003/chr20/Illumina/coverage_Illumina.png
-!data/4_out/mosdepth/HG003/chr20/Illumina/HG003.Illumina.chr20.mosdepth.summary.txt
-
-/data/4_out/mosdepth/HG003/chr20/ONT/*
-!data/4_out/mosdepth/HG003/chr20/ONT/coverage_ONT.png
-!data/4_out/mosdepth/HG003/chr20/ONT/HG003.ONT.chr20.mosdepth.summary.txt
-
-
-/data/4_out/mosdepth/HG003/chr20/downsampled/**
-
-
 # Resultados de make_examples en modo train
 /data/4_out/deepvariant/HG003/make_examples_train/
 /data/4_out/datasets/
