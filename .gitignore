@@ -26,3 +26,13 @@
 /training/scripts/old/*
 /training/scripts/hybrid_dv/analysis/old/*
 /training/scripts/hybrid_dv/baselines/old/*
+
+# Udocker 
+/.udocker
+
+# Cluster
+/out
+/old
+/logs
+/tools
+/.venv
