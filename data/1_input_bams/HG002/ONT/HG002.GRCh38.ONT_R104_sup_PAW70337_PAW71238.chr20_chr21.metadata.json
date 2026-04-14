@@ -1,0 +1,21 @@
+{
+  "sample": "HG002",
+  "technology": "ONT",
+  "regions": [
+    "chr20",
+    "chr21"
+  ],
+  "source_type": "merged_regional_bams",
+  "source": "https://ont-open-data.s3.amazonaws.com/giab_2025.01/basecalling/sup/HG002/",
+  "selection_policy": "merged_multiple_runs",
+  "basecalling": "sup",
+  "run_ids": [
+    "PAW70337",
+    "PAW71238"
+  ],
+  "output_bam": "data/1_input_bams/HG002/ONT/HG002.GRCh38.ONT_R104_sup_PAW70337_PAW71238.chr20_chr21.bam",
+  "output_bai": "data/1_input_bams/HG002/ONT/HG002.GRCh38.ONT_R104_sup_PAW70337_PAW71238.chr20_chr21.bam.bai",
+  "created_utc": "2026-04-14T10:12:24Z",
+  "script": "download_giab_regions.sh",
+  "notes": "Merged ONT regional BAM generated from multiple selected runs."
+}

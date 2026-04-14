@@ -1,0 +1,18 @@
+{
+  "sample": "HG005",
+  "technology": "Illumina",
+  "regions": [
+    "chr20",
+    "chr21"
+  ],
+  "source_type": "remote_bam_region_extract",
+  "source": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data/ChineseTrio/HG005_NA24631_son/HG005_NA24631_son_HiSeq_300x/NHGRI_Illumina300X_Chinesetrio_novoalign_bams/HG005.GRCh38_full_plus_hs38d1_analysis_set_minus_alts.300x.bam",
+  "selection_policy": "canonical_giab_bam",
+  "basecalling": null,
+  "run_ids": [],
+  "output_bam": "data/1_input_bams/HG005/Illumina/HG005.GRCh38.300x.chr20_chr21.bam",
+  "output_bai": "data/1_input_bams/HG005/Illumina/HG005.GRCh38.300x.chr20_chr21.bam.bai",
+  "created_utc": "2026-04-14T05:29:05Z",
+  "script": "download_giab_regions_v2.sh",
+  "notes": "Illumina BAM used as remote indexed source. Requested regions were resolved dynamically from the BAM header/aliases before extraction. Output naming follows source label semantics (2x250 for HG002-HG004, 300x for HG005). Extraction uses retries and promotes only BAMs that pass quickcheck."
+}

@@ -1,0 +1,20 @@
+{
+  "sample": "HG005",
+  "technology": "ONT",
+  "regions": [
+    "chr20",
+    "chr21"
+  ],
+  "source_type": "remote_bam_region_extract",
+  "source": "https://ont-open-data.s3.amazonaws.com/giab_2025.01/basecalling/sup/HG005/PAW87816/calls.sorted.bam",
+  "selection_policy": "explicit_multi_run",
+  "basecalling": "sup",
+  "run_ids": [
+    "PAW87816"
+  ],
+  "output_bam": "data/1_input_bams/HG005/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816.chr20_chr21.bam",
+  "output_bai": "data/1_input_bams/HG005/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816.chr20_chr21.bam.bai",
+  "created_utc": "2026-04-14T11:22:25Z",
+  "script": "download_giab_regions.sh",
+  "notes": "ONT regional BAM extracted from selected run. Remote index handled in isolated temp dir and referenced explicitly via ##idx## to avoid cwd cache collisions on calls.sorted.bam.bai. Requested regions were resolved dynamically from the BAM header/aliases before extraction. Extraction uses retries and promotes only BAMs that pass quickcheck."
+}
