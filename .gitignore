@@ -14,6 +14,7 @@
 
 # Resultados de make_examples en modo train
 /data/4_out/deepvariant/HG003/make_examples_train/
+/data/4_out/deepvariant/examples/
 /data/4_out/datasets/
 
 # Reports de los datasets
