@@ -1,0 +1,25 @@
+{
+  "derived_mosdepth_summary": "data/4_out/mosdepth_multimodal_benchmark/HG005/chr20_chr21/coverage_study/Illumina/HG005.GRCh38.300x.chr20_chr21.cov10x.s42.mosdepth.summary.txt",
+  "fraction": 0.035318,
+  "notes": "final_test",
+  "observed_coverage": 10.0,
+  "observed_coverage_by_chrom": {
+    "chr20": 10.58,
+    "chr21": 9.2
+  },
+  "output_bai": "data/1_input_bams/HG005/derived/chr20_chr21/coverage_study/Illumina/HG005.GRCh38.300x.chr20_chr21.cov10x.s42.bam.bai",
+  "output_bam": "data/1_input_bams/HG005/derived/chr20_chr21/coverage_study/Illumina/HG005.GRCh38.300x.chr20_chr21.cov10x.s42.bam",
+  "output_group": "coverage_study",
+  "parent_bam": "data/1_input_bams/HG005/Illumina/HG005.GRCh38.300x.chr20_chr21.bam",
+  "regions": [
+    "chr20",
+    "chr21"
+  ],
+  "sample": "HG005",
+  "seed": 42,
+  "seed_fraction": "42.035318",
+  "source_mosdepth_summary": "data/4_out/mosdepth_multimodal_benchmark/HG005/chr20_chr21/sources/Illumina/HG005.GRCh38.300x.chr20_chr21.source.mosdepth.summary.txt",
+  "source_policy": "canonical_regional",
+  "target_coverage": 10,
+  "technology": "Illumina"
+}

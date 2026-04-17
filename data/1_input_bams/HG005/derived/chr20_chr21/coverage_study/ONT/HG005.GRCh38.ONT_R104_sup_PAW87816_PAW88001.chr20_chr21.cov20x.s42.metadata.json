@@ -1,0 +1,25 @@
+{
+  "derived_mosdepth_summary": "data/4_out/mosdepth_multimodal_benchmark/HG005/chr20_chr21/coverage_study/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816_PAW88001.chr20_chr21.cov20x.s42.mosdepth.summary.txt",
+  "fraction": 0.339559,
+  "notes": "final_test",
+  "observed_coverage": 19.96,
+  "observed_coverage_by_chrom": {
+    "chr20": 19.99,
+    "chr21": 19.93
+  },
+  "output_bai": "data/1_input_bams/HG005/derived/chr20_chr21/coverage_study/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816_PAW88001.chr20_chr21.cov20x.s42.bam.bai",
+  "output_bam": "data/1_input_bams/HG005/derived/chr20_chr21/coverage_study/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816_PAW88001.chr20_chr21.cov20x.s42.bam",
+  "output_group": "coverage_study",
+  "parent_bam": "data/1_input_bams/HG005/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816_PAW88001.chr20_chr21.bam",
+  "regions": [
+    "chr20",
+    "chr21"
+  ],
+  "sample": "HG005",
+  "seed": 42,
+  "seed_fraction": "42.339559",
+  "source_mosdepth_summary": "data/4_out/mosdepth_multimodal_benchmark/HG005/chr20_chr21/sources/ONT/HG005.GRCh38.ONT_R104_sup_PAW87816_PAW88001.chr20_chr21.source.mosdepth.summary.txt",
+  "source_policy": "merged_two_runs",
+  "target_coverage": 20,
+  "technology": "ONT"
+}
