@@ -1,0 +1,12 @@
+{
+  "base_url": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/ChineseTrio/HG005_NA24631_son/NISTv4.2.1/GRCh38",
+  "build": "GRCh38",
+  "files": {
+    "confident_bed": "HG005_GRCh38_1_22_v4.2.1_benchmark.bed",
+    "truth_vcf": "HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz",
+    "truth_vcf_tbi": "HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi"
+  },
+  "release": "NISTv4.2.1",
+  "sample": "HG005",
+  "variant_type": "small_variants"
+}

@@ -1,0 +1,12 @@
+{
+  "base_url": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG004_NA24143_mother/NISTv4.2.1/GRCh38",
+  "build": "GRCh38",
+  "files": {
+    "confident_bed": "HG004_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed",
+    "truth_vcf": "HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz",
+    "truth_vcf_tbi": "HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz.tbi"
+  },
+  "release": "NISTv4.2.1",
+  "sample": "HG004",
+  "variant_type": "small_variants"
+}
