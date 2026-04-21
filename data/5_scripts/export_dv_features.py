@@ -7,33 +7,33 @@ Designed for DeepVariant docker images (e.g. google/deepvariant:1.9.0) and their
 SavedModel bundles under /opt/models/*.
 
 This version avoids decoding variant protobufs (no variants_pb2, no tf.parse_tensor).
-Instead it exports a robust *hash-based* ID for joining multimodal datasets offline.
 
-Outputs one or more .npz shards with:
+Default outputs per .npz shard:
   - embeddings:      (N, D) float32 (typically D=2048)
   - teacher_logits:  (N, 3) float32
   - teacher_probs:   (N, 3) float32
   - label:           (N,) int64 (=-1 if not present in TFRecords)
   - locus:           (N,) str   (e.g. chr20:88865-88867)
 
-  - variant_hash:    (N,) str   sha1(variant/encoded) hex (exact candidate match)
   - alt_idx_list:    (N,) str   e.g. "0", "1", "0,1" (decoded from alt_allele_indices/encoded)
   - alt_idx0:        (N,) int64 first alt index (for convenience)
-  - example_id:      (N,) str   f"{variant_hash}:{alt_idx_list}"
 
   - chrom:           (N,) str   from locus
   - locus_start:     (N,) int64
   - locus_end:       (N,) int64
   - variant_type:    (N,) int64 (from TFExample if present else -1)
   - sequencing_type: (N,) int64 (from TFExample if present else -1)
-  - variant_len:     (N,) int64 len(variant/encoded) (debug)
+
+Optional identity metadata (disabled by default, enable with --emit_identity_meta 1):
+  - variant_hash:    (N,) str   sha1(variant/encoded) hex
+  - example_id:      (N,) str   f"{variant_hash}:{alt_idx_list}"
+  - variant_len:     (N,) int64 len(variant/encoded)
 
 Usage (inside DeepVariant docker):
   python3 -u /data/scripts/export_dv_features.py \
     --model_dir /opt/models/wgs \
     --tfrecord_glob "data/.../make_examples.tfrecord-*-of-00014.gz" \
-    --out_prefix "data/.../hg003_chr20_illumina" \
-    --max_records 20000
+    --out_prefix "data/.../hg003_chr20_illumina"
 
 If tensor names differ across models, pass --emb_tensor/--logits_tensor.
 Otherwise the script tries to auto-detect suitable tensors.
@@ -115,7 +115,7 @@ def _sha1_hex(b: bytes) -> str:
     return hashlib.sha1(b).hexdigest()
 
 
-def parse_example(rec_bytes: bytes):
+def parse_example(rec_bytes: bytes, emit_identity_meta: bool = False):
     """Parse a DeepVariant TF.train.Example -> image (float32), label (int), locus(str), meta (dict)."""
     ex = tf.train.Example.FromString(rec_bytes)
     f = ex.features.feature
@@ -133,11 +133,6 @@ def parse_example(rec_bytes: bytes):
 
     chrom_l, s_l, e_l = _parse_locus(locus)
 
-    # variant/encoded bytes (candidate identity)
-    vb = f["variant/encoded"].bytes_list.value[0] if "variant/encoded" in f else b""
-    vhash = _sha1_hex(vb) if vb else ""
-    vlen = len(vb)
-
     # alt indices bytes (packed varints)
     ab = f["alt_allele_indices/encoded"].bytes_list.value[0] if "alt_allele_indices/encoded" in f else b""
     alt_list = decode_alt_indices_encoded(ab)
@@ -148,23 +143,27 @@ def parse_example(rec_bytes: bytes):
     variant_type = int(f["variant_type"].int64_list.value[0]) if "variant_type" in f else -1
     sequencing_type = int(f["sequencing_type"].int64_list.value[0]) if "sequencing_type" in f else -1
 
-    # Join key that distinguishes multi-alt examples:
-    # - variant_hash groups the candidate
-    # - alt_idx_list distinguishes which alt(s) this example corresponds to
-    example_id = f"{vhash}:{alt_list_str}" if vhash else f"{chrom_l}:{s_l}-{e_l}:alt={alt_list_str}"
-
     meta = {
-        "variant_hash": vhash,
         "alt_idx_list": alt_list_str,
         "alt_idx0": alt0,
-        "example_id": example_id,
         "chrom": chrom_l,
         "locus_start": s_l,
         "locus_end": e_l,
         "variant_type": variant_type,
         "sequencing_type": sequencing_type,
-        "variant_len": vlen,
     }
+
+    if emit_identity_meta:
+        vb = f["variant/encoded"].bytes_list.value[0] if "variant/encoded" in f else b""
+        vhash = _sha1_hex(vb) if vb else ""
+        vlen = len(vb)
+        example_id = f"{vhash}:{alt_list_str}" if vhash else f"{chrom_l}:{s_l}-{e_l}:alt={alt_list_str}"
+
+        meta.update({
+            "variant_hash": vhash,
+            "example_id": example_id,
+            "variant_len": vlen,
+        })
 
     return img, y, locus, meta
 
@@ -244,14 +243,23 @@ def main():
     ap.add_argument("--out_prefix", required=True, help="Output prefix for NPZ shards")
 
     ap.add_argument("--batch_size", type=int, default=128)
-    ap.add_argument("--chunk_size", type=int, default=20000)
+    ap.add_argument("--chunk_size", type=int, default=40000)
     ap.add_argument("--max_records", type=int, default=None)
     ap.add_argument("--log_every", type=int, default=2000)
 
     ap.add_argument("--emb_tensor", default=None, help="Override embedding tensor name")
     ap.add_argument("--logits_tensor", default=None, help="Override logits tensor name")
     ap.add_argument("--verbose_tensors", action="store_true", help="Print candidate tensors and exit")
+
+    ap.add_argument(
+        "--emit_identity_meta",
+        type=int,
+        default=0,
+        help="If 1, export legacy identity metadata: variant_hash, example_id, variant_len.",
+    )
     args = ap.parse_args()
+
+    emit_identity_meta = bool(args.emit_identity_meta)
 
     out_dir = os.path.dirname(args.out_prefix)
     if out_dir:
@@ -263,6 +271,7 @@ def main():
 
     print("TF version:", tf.__version__, "Eager:", tf.executing_eagerly())
     print("TFRecords:", len(paths))
+    print("emit_identity_meta:", emit_identity_meta)
 
     loaded = tf.saved_model.load(args.model_dir)
     fn = loaded.signatures.get("serving_default")
@@ -303,17 +312,19 @@ def main():
     Y: List[int] = []
     Loc: List[str] = []
 
-    variant_hash: List[str] = []
     alt_idx_list: List[str] = []
     alt_idx0: List[int] = []
-    example_id: List[str] = []
 
     chrom: List[str] = []
     locus_start: List[int] = []
     locus_end: List[int] = []
     variant_type: List[int] = []
     sequencing_type: List[int] = []
-    variant_len: List[int] = []
+
+    if emit_identity_meta:
+        variant_hash: List[str] = []
+        example_id: List[str] = []
+        variant_len: List[int] = []
 
     bx: List[np.ndarray] = []
     by: List[int] = []
@@ -327,37 +338,46 @@ def main():
         nonlocal chunk
         if not X:
             return
+
         out = f"{args.out_prefix}_{chunk:04d}.npz"
-        np.savez_compressed(
-            out,
-            embeddings=np.stack(X).astype(np.float32),
-            teacher_logits=np.stack(Lg).astype(np.float32),
-            teacher_probs=np.stack(Pb).astype(np.float32),
-            label=np.asarray(Y, dtype=np.int64),
-            locus=np.asarray(Loc, dtype=np.str_),
 
-            variant_hash=np.asarray(variant_hash, dtype=np.str_),
-            alt_idx_list=np.asarray(alt_idx_list, dtype=np.str_),
-            alt_idx0=np.asarray(alt_idx0, dtype=np.int64),
-            example_id=np.asarray(example_id, dtype=np.str_),
+        payload = {
+            "embeddings": np.stack(X).astype(np.float32),
+            "teacher_logits": np.stack(Lg).astype(np.float32),
+            "teacher_probs": np.stack(Pb).astype(np.float32),
+            "label": np.asarray(Y, dtype=np.int64),
+            "locus": np.asarray(Loc, dtype=np.str_),
+            "alt_idx_list": np.asarray(alt_idx_list, dtype=np.str_),
+            "alt_idx0": np.asarray(alt_idx0, dtype=np.int64),
+            "chrom": np.asarray(chrom, dtype=np.str_),
+            "locus_start": np.asarray(locus_start, dtype=np.int64),
+            "locus_end": np.asarray(locus_end, dtype=np.int64),
+            "variant_type": np.asarray(variant_type, dtype=np.int64),
+            "sequencing_type": np.asarray(sequencing_type, dtype=np.int64),
+        }
 
-            chrom=np.asarray(chrom, dtype=np.str_),
-            locus_start=np.asarray(locus_start, dtype=np.int64),
-            locus_end=np.asarray(locus_end, dtype=np.int64),
-            variant_type=np.asarray(variant_type, dtype=np.int64),
-            sequencing_type=np.asarray(sequencing_type, dtype=np.int64),
-            variant_len=np.asarray(variant_len, dtype=np.int64),
-        )
+        if emit_identity_meta:
+            payload.update({
+                "variant_hash": np.asarray(variant_hash, dtype=np.str_),
+                "example_id": np.asarray(example_id, dtype=np.str_),
+                "variant_len": np.asarray(variant_len, dtype=np.int64),
+            })
+
+        np.savez_compressed(out, **payload)
+
         print("Saved", out, "N=", len(X))
         chunk += 1
 
         X.clear(); Lg.clear(); Pb.clear(); Y.clear(); Loc.clear()
-        variant_hash.clear(); alt_idx_list.clear(); alt_idx0.clear(); example_id.clear()
+        alt_idx_list.clear(); alt_idx0.clear()
         chrom.clear(); locus_start.clear(); locus_end.clear()
-        variant_type.clear(); sequencing_type.clear(); variant_len.clear()
+        variant_type.clear(); sequencing_type.clear()
+
+        if emit_identity_meta:
+            variant_hash.clear(); example_id.clear(); variant_len.clear()
 
     for rec in ds:
-        img, y, locus, meta = parse_example(rec.numpy())
+        img, y, locus, meta = parse_example(rec.numpy(), emit_identity_meta=emit_identity_meta)
         bx.append(img); by.append(y); bloc.append(locus); bmeta.append(meta)
 
         if len(bx) >= args.batch_size:
@@ -379,17 +399,19 @@ def main():
                 Y.append(by[i]); Loc.append(bloc[i])
 
                 m = bmeta[i]
-                variant_hash.append(m.get("variant_hash", ""))
                 alt_idx_list.append(m.get("alt_idx_list", ""))
                 alt_idx0.append(int(m.get("alt_idx0", 0)))
-                example_id.append(m.get("example_id", ""))
 
                 chrom.append(m.get("chrom", ""))
                 locus_start.append(int(m.get("locus_start", -1)))
                 locus_end.append(int(m.get("locus_end", -1)))
                 variant_type.append(int(m.get("variant_type", -1)))
                 sequencing_type.append(int(m.get("sequencing_type", -1)))
-                variant_len.append(int(m.get("variant_len", 0)))
+
+                if emit_identity_meta:
+                    variant_hash.append(m.get("variant_hash", ""))
+                    example_id.append(m.get("example_id", ""))
+                    variant_len.append(int(m.get("variant_len", 0)))
 
             total += emb.shape[0]
             if total % args.log_every == 0:
@@ -413,17 +435,19 @@ def main():
             Y.append(by[i]); Loc.append(bloc[i])
 
             m = bmeta[i]
-            variant_hash.append(m.get("variant_hash", ""))
             alt_idx_list.append(m.get("alt_idx_list", ""))
             alt_idx0.append(int(m.get("alt_idx0", 0)))
-            example_id.append(m.get("example_id", ""))
 
             chrom.append(m.get("chrom", ""))
             locus_start.append(int(m.get("locus_start", -1)))
             locus_end.append(int(m.get("locus_end", -1)))
             variant_type.append(int(m.get("variant_type", -1)))
             sequencing_type.append(int(m.get("sequencing_type", -1)))
-            variant_len.append(int(m.get("variant_len", 0)))
+
+            if emit_identity_meta:
+                variant_hash.append(m.get("variant_hash", ""))
+                example_id.append(m.get("example_id", ""))
+                variant_len.append(int(m.get("variant_len", 0)))
 
         total += emb.shape[0]
 
