@@ -26,10 +26,9 @@ TECH="${TECH:-ont}"
 BAM="${BAM:-}"
 SAMPLE="${SAMPLE:-}"
 MODE="${MODE:-training}"
-REGIONS_ID="${REGIONS_ID:-}"
+REGIONS_ID="${REGIONS_ID:-}"   # alias legacy de scope_id
 COVERAGE_TAG="${COVERAGE_TAG:-}"
 DATASET_ID="${DATASET_ID:-}"
-REGIONS="${REGIONS:-}"
 
 # Opcionales avanzados, normalmente vacíos
 REF="${REF:-}"
@@ -54,7 +53,10 @@ JOBS="${SLURM_CPUS_PER_TASK:-1}"
 [[ -n "$TECH" ]] || { echo "ERROR: TECH not set"; exit 1; }
 [[ -n "$BAM" ]] || { echo "ERROR: BAM not set"; exit 1; }
 [[ -n "$SAMPLE" ]] || { echo "ERROR: SAMPLE not set"; exit 1; }
-[[ -n "$REGIONS_ID" ]] || { echo "ERROR: REGIONS_ID not set"; exit 1; }
+[[ -n "$REGIONS_ID" || -n "$DATASET_ID" ]] || {
+  echo "ERROR: REGIONS_ID (scope_id) not set and DATASET_ID not provided"
+  exit 1
+}
 
 echo "=== ENV CHECK ==="
 hostname
@@ -69,10 +71,9 @@ echo "TECH=${TECH}"
 echo "BAM=${BAM}"
 echo "SAMPLE=${SAMPLE}"
 echo "MODE=${MODE}"
-echo "REGIONS_ID=${REGIONS_ID}"
-echo "COVERAGE_TAG=${COVERAGE_TAG}"
+echo "REGIONS_ID=${REGIONS_ID:-<none>}"
+echo "COVERAGE_TAG=${COVERAGE_TAG:-<none>}"
 echo "DATASET_ID=${DATASET_ID:-<auto>}"
-echo "REGIONS=${REGIONS:-<none>}"
 echo "SHARDS=${SHARDS}"
 echo "JOBS=${JOBS}"
 echo "========================"
@@ -85,16 +86,15 @@ cmd=(
   --bam "$BAM"
   --sample "$SAMPLE"
   --mode "$MODE"
-  --regions_id "$REGIONS_ID"
   --shards "$SHARDS"
   --jobs "$JOBS"
   --force "$FORCE"
   --resume "$RESUME"
 )
 
+[[ -n "$REGIONS_ID" ]] && cmd+=( --regions_id "$REGIONS_ID" )
 [[ -n "$COVERAGE_TAG" ]] && cmd+=( --coverage_tag "$COVERAGE_TAG" )
 [[ -n "$DATASET_ID" ]] && cmd+=( --dataset_id "$DATASET_ID" )
-[[ -n "$REGIONS" ]] && cmd+=( --regions "$REGIONS" )
 [[ -n "$REF" ]] && cmd+=( --ref "$REF" )
 [[ -n "$TRUTH_VCF" ]] && cmd+=( --truth_vcf "$TRUTH_VCF" )
 [[ -n "$CONFIDENT_BED" ]] && cmd+=( --confident_bed "$CONFIDENT_BED" )
