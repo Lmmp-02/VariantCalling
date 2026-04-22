@@ -5,6 +5,10 @@ IFS=$'\n\t'
 # -----------------------------------------------------------------------------
 # DeepVariant make_examples runner for the VariantCalling repo.
 #
+# Canonical intent:
+# - consume a BAM that already represents the scope to process
+# - generate DeepVariant examples for that BAM under a given technology/mode
+#
 # Canonical output contract:
 #   data/4_out/deepvariant/examples/<dataset_id>/<dv_preset>/<mode>/
 #
@@ -31,35 +35,33 @@ Required:
 
 Optional but strongly recommended:
   --sample NAME              (if omitted, inferred from BAM basename when possible)
-  --region REGION            (alias of --regions; e.g. chr20)
-  --regions REGIONS          (optional; e.g. chr20 or chr20,chr21)
-  --regions_id ID            (naming id; default: sanitized from --regions)
-                            (required if --regions is omitted and dataset_id is not given)
-  --coverage_tag TAG         (e.g. harmonized_40x; default: omitted from dataset_id)
-  --dataset_id ID            (override computed dataset_id)
-  --mode training|calling    (default: training)
+  --scope_id ID              naming scope for dataset/default paths, e.g. chr20_chr21
+  --regions_id ID            alias of --scope_id for backward compatibility
+  --coverage_tag TAG         e.g. harmonized_40x
+  --dataset_id ID            override computed dataset_id
+  --mode training|calling    default: training
 
 Inputs:
-  --ref PATH                 (default: data/2_reference/.../GRCh38_no_alt_plus_hs38d1.<regions_id>.fa)
-  --truth_vcf PATH           (required in training mode; default: data/3_truth/<sample>/<sample>_<regions_id>.truth.vcf.gz)
-  --confident_bed PATH       (required in training mode; default: data/3_truth/<sample>/<sample>_<regions_id>.confident.bed)
+  --ref PATH                 default: data/2_reference/.../GRCh38_no_alt_plus_hs38d1.<scope_id>.fa
+  --truth_vcf PATH           required in training mode; default: data/3_truth/<sample>/<sample>_<scope_id>.truth.vcf.gz
+  --confident_bed PATH       required in training mode; default: data/3_truth/<sample>/<sample>_<scope_id>.confident.bed
 
 Container runtime:
-  --runtime docker|udocker   (default: docker)
-  --image IMAGE              (default: google/deepvariant:1.9.0)
+  --runtime docker|udocker   default: docker
+  --image IMAGE              default: google/deepvariant:1.9.0
 
 Execution:
-  --shards N                 (default: nproc)
-  --jobs N                   (default: min(shards, nproc))
-  --resume 0|1               (default: 1)
-  --force 0|1                (default: 0)
-  --out_root DIR             (default: data/4_out/deepvariant/examples)
-  --extra_args "..."         (passed to make_examples)
+  --shards N                 default: nproc
+  --jobs N                   default: min(shards, nproc)
+  --resume 0|1               default: 1
+  --force 0|1                default: 0
+  --out_root DIR             default: data/4_out/deepvariant/examples
+  --extra_args "..."         passed to make_examples
 
 Optional validation:
-  --validate_labels 0|1      (default: 1 in training, 0 in calling)
-  --validator_py PATH        (default: data/5_scripts/analysis/check_tfrecord_has_label.py)
-  --validator_max_records N  (default: 3)
+  --validate_labels 0|1      default: 1 in training, 0 in calling
+  --validator_py PATH        default: data/5_scripts/analysis/check_tfrecord_has_label.py
+  --validator_max_records N  default: 3
 
 Output:
   data/4_out/deepvariant/examples/<dataset_id>/<dv_preset>/<mode>/
@@ -81,16 +83,6 @@ infer_sample_from_bam() {
     return 0
   fi
   return 1
-}
-
-sanitize_regions_id() {
-  local x="$1"
-  x="${x//,/\_}"
-  x="${x//:/\_}"
-  x="${x//\//\_}"
-  x="${x// /\_}"
-  x="${x//__/_}"
-  echo "$x"
 }
 
 container_exists() {
@@ -131,8 +123,7 @@ out = sys.argv[1]
 obj = {
     "dataset_id": os.environ["DATASET_ID"],
     "sample": os.environ["SAMPLE"],
-    "regions": os.environ.get("REGIONS") or None,
-    "regions_id": os.environ["REGIONS_ID"],
+    "scope_id": os.environ.get("SCOPE_ID") or None,
     "coverage_tag": os.environ.get("COVERAGE_TAG", ""),
     "tech": os.environ["TECH"],
     "dv_preset": os.environ["DV_PRESET"],
@@ -252,10 +243,6 @@ run_task() {
     --logtostderr
   )
 
-  if [[ ${#REGION_ARGS[@]} -gt 0 ]]; then
-    cmd+=("${REGION_ARGS[@]}")
-  fi
-
   if [[ "$MODE" == "training" ]]; then
     cmd+=(
       --truth_variants "$TRUTH_VCF"
@@ -282,8 +269,7 @@ run_task() {
 TECH=""
 BAM=""
 SAMPLE=""
-REGIONS=""
-REGIONS_ID=""
+SCOPE_ID=""
 COVERAGE_TAG=""
 DATASET_ID=""
 MODE="training"
@@ -313,9 +299,8 @@ while [[ $# -gt 0 ]]; do
     --tech) TECH="$2"; shift 2 ;;
     --bam) BAM="$2"; shift 2 ;;
     --sample) SAMPLE="$2"; shift 2 ;;
-    --region) REGIONS="$2"; shift 2 ;;
-    --regions) REGIONS="$2"; shift 2 ;;
-    --regions_id) REGIONS_ID="$2"; shift 2 ;;
+    --scope_id) SCOPE_ID="$2"; shift 2 ;;
+    --regions_id) SCOPE_ID="$2"; shift 2 ;;  # backward compatibility
     --coverage_tag) COVERAGE_TAG="$2"; shift 2 ;;
     --dataset_id) DATASET_ID="$2"; shift 2 ;;
     --mode) MODE="$2"; shift 2 ;;
@@ -364,37 +349,17 @@ if [[ -z "$SAMPLE" ]]; then
 fi
 [[ -n "$SAMPLE" ]] || die "Could not infer sample from BAM. Please pass --sample."
 
-if [[ -z "$REGIONS_ID" ]]; then
-  if [[ -n "$REGIONS" ]]; then
-    REGIONS_ID="$(sanitize_regions_id "$REGIONS")"
-  elif [[ -n "$DATASET_ID" ]]; then
-    REGIONS_ID="unspecified"
-  else
-    die "Missing --regions_id (required when --regions is omitted and --dataset_id is not provided)."
-  fi
-fi
-
 if [[ -z "$DATASET_ID" ]]; then
-  DATASET_ID="$(echo "$SAMPLE" | tr '[:upper:]' '[:lower:]')_${REGIONS_ID}"
+  [[ -n "$SCOPE_ID" ]] || die "Missing --scope_id (or --regions_id) when --dataset_id is not provided."
+  DATASET_ID="$(echo "$SAMPLE" | tr '[:upper:]' '[:lower:]')_${SCOPE_ID}"
   if [[ -n "$COVERAGE_TAG" ]]; then
     DATASET_ID+="_${COVERAGE_TAG}"
   fi
 fi
 
-# ---- optional region filters passed to DeepVariant ----
-declare -a REGION_ARGS=()
-if [[ -n "$REGIONS" ]]; then
-  IFS=',' read -r -a _raw_regions <<< "$REGIONS"
-  for _r in "${_raw_regions[@]}"; do
-    _r="$(echo "$_r" | xargs)"
-    [[ -n "$_r" ]] || continue
-    REGION_ARGS+=( --regions "$_r" )
-  done
-  [[ ${#REGION_ARGS[@]} -gt 0 ]] || die "No valid regions parsed from --regions: $REGIONS"
-fi
-
 if [[ -z "$REF" ]]; then
-  REF="data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.${REGIONS_ID}.fa"
+  [[ -n "$SCOPE_ID" ]] || die "Missing --scope_id (or --regions_id): needed to resolve default --ref."
+  REF="data/2_reference/GRCh38_no_alt_plus_hs38d1/GRCh38_no_alt_plus_hs38d1.${SCOPE_ID}.fa"
 fi
 REF="$(to_abs "$REF")"
 [[ -f "$REF" ]] || die "REF not found: $REF"
@@ -403,10 +368,12 @@ REF="$(to_abs "$REF")"
 
 if [[ "$MODE" == "training" ]]; then
   if [[ -z "$TRUTH_VCF" ]]; then
-    TRUTH_VCF="data/3_truth/${SAMPLE}/${SAMPLE}_${REGIONS_ID}.truth.vcf.gz"
+    [[ -n "$SCOPE_ID" ]] || die "Missing --scope_id (or --regions_id): needed to resolve default --truth_vcf."
+    TRUTH_VCF="data/3_truth/${SAMPLE}/${SAMPLE}_${SCOPE_ID}.truth.vcf.gz"
   fi
   if [[ -z "$CONF_BED" ]]; then
-    CONF_BED="data/3_truth/${SAMPLE}/${SAMPLE}_${REGIONS_ID}.confident.bed"
+    [[ -n "$SCOPE_ID" ]] || die "Missing --scope_id (or --regions_id): needed to resolve default --confident_bed."
+    CONF_BED="data/3_truth/${SAMPLE}/${SAMPLE}_${SCOPE_ID}.confident.bed"
   fi
   TRUTH_VCF="$(to_abs "$TRUTH_VCF")"
   CONF_BED="$(to_abs "$CONF_BED")"
@@ -472,7 +439,7 @@ fi
 mkdir -p "$LOG_DIR"
 rm -f "$SUCCESS_MARK"
 
-export DATASET_ID SAMPLE REGIONS REGIONS_ID COVERAGE_TAG TECH DV_PRESET MODE
+export DATASET_ID SAMPLE SCOPE_ID COVERAGE_TAG TECH DV_PRESET MODE
 export BAM REF TRUTH_VCF CONF_BED RUNTIME IMAGE SHARDS JOBS RESUME FORCE
 export CHANNEL_LIST PILEUP_WIDTH ALT_ALIGNED_ARGS EXTRA_ARGS
 export VALIDATE_LABELS VALIDATOR_PY VALIDATOR_MAX_RECORDS
@@ -481,6 +448,7 @@ write_manifest_json
 
 echo "==> RUN_DIR: ${RUN_DIR}"
 echo "==> DATASET_ID: ${DATASET_ID}"
+echo "==> SCOPE_ID: ${SCOPE_ID:-<none>}"
 echo "==> DV_PRESET: ${DV_PRESET}"
 echo "==> MODE: ${MODE}"
 echo "==> EXAMPLES: ${EXAMPLES_SPEC}"
