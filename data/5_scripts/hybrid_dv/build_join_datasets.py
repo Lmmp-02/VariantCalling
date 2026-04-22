@@ -6,8 +6,10 @@ datasets from sharded NPZ exports (Illumina + ONT).
 Key properties:
 - NPZ access is grouped by shard pair (ill_npz, ont_npz) and arrays are loaded ONCE per shard.
 - Can build INNER, OUTER, or both.
-- OUTER keeps singleton loci only and excludes ambiguous loci.
+- OUTER keeps singleton loci only and excludes ambiguous loci when requested.
 - Writes chrom/locus_start/locus_end for downstream chrom-based splits.
+- Can drop ambiguous bimodal loci consistently in both INNER and OUTER:
+  cases where Illumina and ONT disagree in label and/or variant_type.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from __future__ import annotations
 import argparse
 import csv
 import glob
+import json
 import os
 import re
 from collections import Counter, defaultdict
@@ -80,6 +83,10 @@ def new_buf(include_teacher: bool) -> dict:
         "locus_start": [],
         "locus_end": [],
         "label": [],
+        "variant_type": [],
+        "variant_type_mismatch": [],
+        "ill_variant_type": [],
+        "ont_variant_type": [],
         "mask_ill": [],
         "mask_ont": [],
         "group": [],
@@ -106,6 +113,10 @@ def flush_npz(out_path: str, buf: dict, include_teacher: bool) -> int:
         "locus_start": np.asarray(buf["locus_start"], dtype=np.int64),
         "locus_end": np.asarray(buf["locus_end"], dtype=np.int64),
         "label": np.asarray(buf["label"], dtype=np.int64),
+        "variant_type": np.asarray(buf["variant_type"], dtype=np.int64),
+        "variant_type_mismatch": np.asarray(buf["variant_type_mismatch"], dtype=np.int64),
+        "ill_variant_type": np.asarray(buf["ill_variant_type"], dtype=np.int64),
+        "ont_variant_type": np.asarray(buf["ont_variant_type"], dtype=np.int64),
         "mask_ill": np.asarray(buf["mask_ill"], dtype=np.int64),
         "mask_ont": np.asarray(buf["mask_ont"], dtype=np.int64),
         "group": np.asarray(buf["group"], dtype=np.int64),
@@ -137,6 +148,34 @@ def append_common_meta(buf: dict, locus: str):
     buf["locus_end"].append(e)
 
 
+def resolve_variant_type(mask_ill: int, mask_ont: int, ill_vt: int, ont_vt: int) -> Tuple[int, int]:
+    """
+    Return:
+      merged_variant_type, mismatch_flag
+
+    Rules:
+    - only Illumina present -> ill_variant_type
+    - only ONT present -> ont_variant_type
+    - both present and equal -> that value
+    - both present and different -> -1 and mismatch=1
+    """
+    if mask_ill and mask_ont:
+        if ill_vt == ont_vt:
+            return int(ill_vt), 0
+        return -1, 1
+    if mask_ill:
+        return int(ill_vt), 0
+    if mask_ont:
+        return int(ont_vt), 0
+    return -1, 0
+
+
+def write_json(path: str, obj: dict):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, sort_keys=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ill_glob", required=True)
@@ -147,8 +186,8 @@ def main():
     ap.add_argument("--prefix", default="hg003_chr20")
 
     ap.add_argument("--chunk_size", type=int, default=20000)
-    ap.add_argument("--drop_disagree", type=int, default=1,
-                    help="INNER only: drop loci where labels disagree.")
+    ap.add_argument("--drop_ambiguous_bimodal", type=int, default=1,
+                    help="If 1, drop bimodal loci where Illumina and ONT disagree in label and/or variant_type.")
     ap.add_argument("--include_teacher", type=int, default=1,
                     help="Include teacher logits/probs in outputs.")
     ap.add_argument("--write_meta_csv", type=int, default=1)
@@ -163,6 +202,7 @@ def main():
     build_inner = bool(args.build_inner)
     build_outer = bool(args.build_outer)
     include_teacher = bool(args.include_teacher)
+    drop_ambiguous_bimodal = bool(args.drop_ambiguous_bimodal)
 
     if not build_inner and not build_outer:
         raise SystemExit("Nothing to build: set --build_inner 1 and/or --build_outer 1.")
@@ -199,7 +239,7 @@ def main():
             outer_loci.add(L)
 
     print(f"INNER loci (1↔1): {len(inner_loci)}")
-    print(f"OUTER loci (singleton-only, no ambiguous): {len(outer_loci)}")
+    print(f"OUTER loci (singleton-only before ambiguity filter): {len(outer_loci)}")
 
     keep_loci = outer_loci if build_outer else inner_loci
     print("Building singleton locus index (Illumina)...")
@@ -237,7 +277,12 @@ def main():
         buf = new_buf(include_teacher)
         chunk = 0
         kept = 0
-        dropped = 0
+        candidates = 0
+        dropped_ambiguous = 0
+        dropped_label_mismatch = 0
+        dropped_variant_type_mismatch = 0
+        observed_label_mismatch = 0
+        observed_variant_type_mismatch = 0
 
         for gi, (ipath, opath) in enumerate(group_keys, start=1):
             items = inner_groups[(ipath, opath)]
@@ -249,25 +294,51 @@ def main():
 
             ill_label = di["label"].astype(np.int64)
             ill_emb = di["embeddings"].astype(np.float32)
+            ill_variant_type = di["variant_type"].astype(np.int64) if "variant_type" in di.files else np.full_like(ill_label, -1)
             if include_teacher:
                 ill_logits = di["teacher_logits"].astype(np.float32)
                 ill_probs = di["teacher_probs"].astype(np.float32)
 
             ont_label = do["label"].astype(np.int64)
             ont_emb = do["embeddings"].astype(np.float32)
+            ont_variant_type = do["variant_type"].astype(np.int64) if "variant_type" in do.files else np.full_like(ont_label, -1)
             if include_teacher:
                 ont_logits = do["teacher_logits"].astype(np.float32)
                 ont_probs = do["teacher_probs"].astype(np.float32)
 
             for (L, iidx, oidx) in items:
+                candidates += 1
+
                 y_ill = int(ill_label[iidx])
                 y_ont = int(ont_label[oidx])
-                if args.drop_disagree and (y_ill != y_ont):
-                    dropped += 1
+                vt_ill = int(ill_variant_type[iidx])
+                vt_ont = int(ont_variant_type[oidx])
+
+                label_mismatch = y_ill != y_ont
+                variant_type_mismatch = vt_ill != vt_ont
+
+                if label_mismatch:
+                    observed_label_mismatch += 1
+                if variant_type_mismatch:
+                    observed_variant_type_mismatch += 1
+
+                if drop_ambiguous_bimodal and (label_mismatch or variant_type_mismatch):
+                    dropped_ambiguous += 1
+                    if label_mismatch:
+                        dropped_label_mismatch += 1
+                    if variant_type_mismatch:
+                        dropped_variant_type_mismatch += 1
                     continue
 
+                y = y_ill
+                vt, vt_mismatch = resolve_variant_type(1, 1, vt_ill, vt_ont)
+
                 append_common_meta(buf, L)
-                buf["label"].append(y_ill)
+                buf["label"].append(y)
+                buf["variant_type"].append(vt)
+                buf["variant_type_mismatch"].append(vt_mismatch)
+                buf["ill_variant_type"].append(vt_ill)
+                buf["ont_variant_type"].append(vt_ont)
                 buf["mask_ill"].append(1)
                 buf["mask_ont"].append(1)
                 buf["group"].append(11)
@@ -281,7 +352,12 @@ def main():
                     buf["ont_probs"].append(ont_probs[oidx])
 
                 if args.write_meta_csv:
-                    inner_meta_rows.append((L, y_ill, y_ont, ipath, iidx, opath, oidx))
+                    inner_meta_rows.append((
+                        L, int(y), y_ill, y_ont,
+                        vt, vt_ill, vt_ont, vt_mismatch,
+                        1, 1,
+                        ipath, iidx, opath, oidx
+                    ))
 
                 kept += 1
                 if kept % args.chunk_size == 0:
@@ -291,7 +367,11 @@ def main():
                     chunk += 1
 
                 if args.progress_every > 0 and kept % args.progress_every == 0:
-                    print(f"INNER progress: kept={kept} dropped={dropped} (current shard-pair {gi}/{len(group_keys)})")
+                    print(
+                        f"INNER progress: kept={kept} "
+                        f"dropped_ambiguous={dropped_ambiguous} "
+                        f"(current shard-pair {gi}/{len(group_keys)})"
+                    )
 
             di.close()
             do.close()
@@ -301,10 +381,29 @@ def main():
             n = flush_npz(out, buf, include_teacher)
             print("Saved", out, "N=", n, "(last)")
 
-        print(f"INNER done. kept={kept} dropped_disagree={dropped} missing_map={missing_map}")
+        inner_report = {
+            "build_inner": True,
+            "drop_ambiguous_bimodal": drop_ambiguous_bimodal,
+            "inner_loci_1to1": len(inner_loci),
+            "missing_map": missing_map,
+            "candidate_rows": candidates,
+            "kept_rows": kept,
+            "dropped_ambiguous_bimodal": dropped_ambiguous,
+            "dropped_label_mismatch": dropped_label_mismatch,
+            "dropped_variant_type_mismatch": dropped_variant_type_mismatch,
+            "observed_label_mismatch": observed_label_mismatch,
+            "observed_variant_type_mismatch": observed_variant_type_mismatch,
+        }
+        write_json(os.path.join(args.out_inner_dir, f"{args.prefix}_inner_report.json"), inner_report)
+
+        print(
+            f"INNER done. kept={kept} "
+            f"dropped_ambiguous={dropped_ambiguous} "
+            f"missing_map={missing_map}"
+        )
 
     if build_outer:
-        print("\n==> Building OUTER dataset (singleton-only, no ambiguous)...")
+        print("\n==> Building OUTER dataset (singleton-only)...")
         outer_groups = defaultdict(list)
         for L in outer_loci:
             has_ill = L in ill_single
@@ -320,6 +419,15 @@ def main():
         buf = new_buf(include_teacher)
         chunk = 0
         kept = 0
+        candidates = 0
+        bimodal_candidates = 0
+        ill_only_candidates = 0
+        ont_only_candidates = 0
+        dropped_ambiguous = 0
+        dropped_label_mismatch = 0
+        dropped_variant_type_mismatch = 0
+        observed_label_mismatch = 0
+        observed_variant_type_mismatch = 0
 
         for gi, (ipath, opath) in enumerate(group_keys, start=1):
             items = outer_groups[(ipath, opath)]
@@ -332,6 +440,7 @@ def main():
                 di = np.load(ipath, allow_pickle=True)
                 ill_label = di["label"].astype(np.int64)
                 ill_emb = di["embeddings"].astype(np.float32)
+                ill_variant_type = di["variant_type"].astype(np.int64) if "variant_type" in di.files else np.full_like(ill_label, -1)
                 if include_teacher:
                     ill_logits = di["teacher_logits"].astype(np.float32)
                     ill_probs = di["teacher_probs"].astype(np.float32)
@@ -339,20 +448,55 @@ def main():
                 do = np.load(opath, allow_pickle=True)
                 ont_label = do["label"].astype(np.int64)
                 ont_emb = do["embeddings"].astype(np.float32)
+                ont_variant_type = do["variant_type"].astype(np.int64) if "variant_type" in do.files else np.full_like(ont_label, -1)
                 if include_teacher:
                     ont_logits = do["teacher_logits"].astype(np.float32)
                     ont_probs = do["teacher_probs"].astype(np.float32)
 
             for (L, iidx, oidx) in items:
+                candidates += 1
+
                 mask_ill = 1 if ipath else 0
                 mask_ont = 1 if opath else 0
+
+                if mask_ill and mask_ont:
+                    bimodal_candidates += 1
+                elif mask_ill:
+                    ill_only_candidates += 1
+                elif mask_ont:
+                    ont_only_candidates += 1
+
                 y_ill = int(ill_label[iidx]) if mask_ill else -1
                 y_ont = int(ont_label[oidx]) if mask_ont else -1
+                vt_ill = int(ill_variant_type[iidx]) if mask_ill else -1
+                vt_ont = int(ont_variant_type[oidx]) if mask_ont else -1
+
+                label_mismatch = (mask_ill and mask_ont and y_ill != y_ont)
+                variant_type_mismatch = (mask_ill and mask_ont and vt_ill != vt_ont)
+
+                if label_mismatch:
+                    observed_label_mismatch += 1
+                if variant_type_mismatch:
+                    observed_variant_type_mismatch += 1
+
+                if drop_ambiguous_bimodal and (label_mismatch or variant_type_mismatch):
+                    dropped_ambiguous += 1
+                    if label_mismatch:
+                        dropped_label_mismatch += 1
+                    if variant_type_mismatch:
+                        dropped_variant_type_mismatch += 1
+                    continue
+
                 y = y_ill if mask_ill else y_ont
                 group = 11 if (mask_ill and mask_ont) else (10 if mask_ill else 1)
+                vt, vt_mismatch = resolve_variant_type(mask_ill, mask_ont, vt_ill, vt_ont)
 
                 append_common_meta(buf, L)
                 buf["label"].append(int(y))
+                buf["variant_type"].append(vt)
+                buf["variant_type_mismatch"].append(vt_mismatch)
+                buf["ill_variant_type"].append(vt_ill)
+                buf["ont_variant_type"].append(vt_ont)
                 buf["mask_ill"].append(mask_ill)
                 buf["mask_ont"].append(mask_ont)
                 buf["group"].append(group)
@@ -380,7 +524,12 @@ def main():
                         buf["ont_probs"].append(zero_ont_probs)
 
                 if args.write_meta_csv:
-                    outer_meta_rows.append((L, int(y), y_ill, y_ont, mask_ill, mask_ont, ipath, iidx, opath, oidx))
+                    outer_meta_rows.append((
+                        L, int(y), y_ill, y_ont,
+                        vt, vt_ill, vt_ont, vt_mismatch,
+                        mask_ill, mask_ont,
+                        ipath, iidx, opath, oidx
+                    ))
 
                 kept += 1
                 if kept % args.chunk_size == 0:
@@ -390,7 +539,11 @@ def main():
                     chunk += 1
 
                 if args.progress_every > 0 and kept % args.progress_every == 0:
-                    print(f"OUTER progress: kept={kept} (current shard-pair {gi}/{len(group_keys)})")
+                    print(
+                        f"OUTER progress: kept={kept} "
+                        f"dropped_ambiguous={dropped_ambiguous} "
+                        f"(current shard-pair {gi}/{len(group_keys)})"
+                    )
 
             if di is not None:
                 di.close()
@@ -402,25 +555,61 @@ def main():
             n = flush_npz(out, buf, include_teacher)
             print("Saved", out, "N=", n, "(last)")
 
-        print(f"OUTER done. kept={kept}")
+        outer_report = {
+            "build_outer": True,
+            "drop_ambiguous_bimodal": drop_ambiguous_bimodal,
+            "outer_loci_singleton_pre_filter": len(outer_loci),
+            "candidate_rows": candidates,
+            "bimodal_candidates": bimodal_candidates,
+            "ill_only_candidates": ill_only_candidates,
+            "ont_only_candidates": ont_only_candidates,
+            "kept_rows": kept,
+            "dropped_ambiguous_bimodal": dropped_ambiguous,
+            "dropped_label_mismatch": dropped_label_mismatch,
+            "dropped_variant_type_mismatch": dropped_variant_type_mismatch,
+            "observed_label_mismatch": observed_label_mismatch,
+            "observed_variant_type_mismatch": observed_variant_type_mismatch,
+        }
+        write_json(os.path.join(args.out_outer_dir, f"{args.prefix}_outer_report.json"), outer_report)
+
+        print(
+            f"OUTER done. kept={kept} "
+            f"dropped_ambiguous={dropped_ambiguous}"
+        )
 
     if args.write_meta_csv:
+        header = [
+            "locus",
+            "label",
+            "label_ill",
+            "label_ont",
+            "variant_type",
+            "ill_variant_type",
+            "ont_variant_type",
+            "variant_type_mismatch",
+            "mask_ill",
+            "mask_ont",
+            "ill_npz",
+            "ill_idx",
+            "ont_npz",
+            "ont_idx",
+        ]
+
         if build_inner:
             os.makedirs(args.out_inner_dir, exist_ok=True)
             inner_csv = os.path.join(args.out_inner_dir, f"{args.prefix}_inner_meta.csv")
-            with open(inner_csv, "w", newline="") as f:
+            with open(inner_csv, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
-                w.writerow(["locus", "label_ill", "label_ont", "ill_npz", "ill_idx", "ont_npz", "ont_idx"])
+                w.writerow(header)
                 w.writerows(inner_meta_rows)
             print("Wrote", inner_csv)
 
         if build_outer:
             os.makedirs(args.out_outer_dir, exist_ok=True)
             outer_csv = os.path.join(args.out_outer_dir, f"{args.prefix}_outer_meta.csv")
-            with open(outer_csv, "w", newline="") as f:
+            with open(outer_csv, "w", newline="", encoding="utf-8") as f:
                 w = csv.writer(f)
-                w.writerow(["locus", "label", "label_ill", "label_ont", "mask_ill", "mask_ont",
-                            "ill_npz", "ill_idx", "ont_npz", "ont_idx"])
+                w.writerow(header)
                 w.writerows(outer_meta_rows)
             print("Wrote", outer_csv)
 

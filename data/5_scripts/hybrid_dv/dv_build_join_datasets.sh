@@ -37,12 +37,16 @@ Optional:
 Join settings:
   --build_inner 0|1            default: 0
   --build_outer 0|1            default: 1
-  --chunk_size N               default: 20000
-  --drop_disagree 0|1          default: 1 (INNER only)
+  --chunk_size N               default: 40000
+  --drop_ambiguous_bimodal 0|1 default: 1
   --include_teacher 0|1        default: 1
   --write_meta_csv 0|1         default: 0
   --progress_every N           default: 2000
   --debug_shards 0|1           default: 0
+
+Execution control:
+  --force 0|1                  default: 0
+                               if 1, removes existing multimodal output dir first
 
 Output:
   data/4_out/datasets/multimodal/by_subject/<dataset_id>/inner/
@@ -76,11 +80,12 @@ obj = {
     "build_inner": os.environ["BUILD_INNER"] == "1",
     "build_outer": os.environ["BUILD_OUTER"] == "1",
     "chunk_size": int(os.environ["CHUNK_SIZE"]),
-    "drop_disagree": os.environ["DROP_DISAGREE"] == "1",
+    "drop_ambiguous_bimodal": os.environ["DROP_AMBIGUOUS_BIMODAL"] == "1",
     "include_teacher": os.environ["INCLUDE_TEACHER"] == "1",
     "write_meta_csv": os.environ["WRITE_META_CSV"] == "1",
     "progress_every": int(os.environ["PROGRESS_EVERY"]),
     "debug_shards": os.environ["DEBUG_SHARDS"] == "1",
+    "force": os.environ["FORCE"] == "1",
     "git_head": os.popen("git rev-parse HEAD 2>/dev/null").read().strip() or None,
 }
 with open(out, "w", encoding="utf-8") as f:
@@ -94,12 +99,13 @@ UNIMODAL_ROOT="data/4_out/datasets/unimodal"
 OUT_ROOT="data/4_out/datasets/multimodal/by_subject"
 BUILD_INNER=0
 BUILD_OUTER=1
-CHUNK_SIZE=20000
-DROP_DISAGREE=1
+CHUNK_SIZE=40000
+DROP_AMBIGUOUS_BIMODAL=1
 INCLUDE_TEACHER=1
 WRITE_META_CSV=0
 PROGRESS_EVERY=2000
 DEBUG_SHARDS=0
+FORCE=0
 
 [[ $# -eq 0 ]] && { usage; exit 1; }
 while [[ $# -gt 0 ]]; do
@@ -111,11 +117,12 @@ while [[ $# -gt 0 ]]; do
     --build_inner) BUILD_INNER="$2"; shift 2 ;;
     --build_outer) BUILD_OUTER="$2"; shift 2 ;;
     --chunk_size) CHUNK_SIZE="$2"; shift 2 ;;
-    --drop_disagree) DROP_DISAGREE="$2"; shift 2 ;;
+    --drop_ambiguous_bimodal) DROP_AMBIGUOUS_BIMODAL="$2"; shift 2 ;;
     --include_teacher) INCLUDE_TEACHER="$2"; shift 2 ;;
     --write_meta_csv) WRITE_META_CSV="$2"; shift 2 ;;
     --progress_every) PROGRESS_EVERY="$2"; shift 2 ;;
     --debug_shards) DEBUG_SHARDS="$2"; shift 2 ;;
+    --force) FORCE="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) die "Unknown arg: $1" ;;
   esac
@@ -125,13 +132,22 @@ done
 [[ "$MODE" == "training" || "$MODE" == "calling" ]] || die "--mode must be training|calling"
 [[ "$BUILD_INNER" == "0" || "$BUILD_INNER" == "1" ]] || die "--build_inner must be 0|1"
 [[ "$BUILD_OUTER" == "0" || "$BUILD_OUTER" == "1" ]] || die "--build_outer must be 0|1"
-[[ "$DROP_DISAGREE" == "0" || "$DROP_DISAGREE" == "1" ]] || die "--drop_disagree must be 0|1"
+[[ "$DROP_AMBIGUOUS_BIMODAL" == "0" || "$DROP_AMBIGUOUS_BIMODAL" == "1" ]] || die "--drop_ambiguous_bimodal must be 0|1"
 [[ "$INCLUDE_TEACHER" == "0" || "$INCLUDE_TEACHER" == "1" ]] || die "--include_teacher must be 0|1"
 [[ "$WRITE_META_CSV" == "0" || "$WRITE_META_CSV" == "1" ]] || die "--write_meta_csv must be 0|1"
 [[ "$DEBUG_SHARDS" == "0" || "$DEBUG_SHARDS" == "1" ]] || die "--debug_shards must be 0|1"
+[[ "$FORCE" == "0" || "$FORCE" == "1" ]] || die "--force must be 0|1"
 (( BUILD_INNER == 1 || BUILD_OUTER == 1 )) || die "Nothing to build."
 
 REPO_ROOT="$(pwd)"
+
+if [[ -f "${REPO_ROOT}/.venv/bin/activate" ]]; then
+  # shellcheck disable=SC1091
+  source "${REPO_ROOT}/.venv/bin/activate"
+else
+  warn ".venv/bin/activate not found under repo root; using system python."
+fi
+
 UNIMODAL_ROOT="$(to_abs "$UNIMODAL_ROOT")"
 OUT_ROOT="$(to_abs "$OUT_ROOT")"
 
@@ -156,11 +172,16 @@ MANIFEST="${RUN_ROOT}/join_manifest.json"
 SUCCESS_MARK="${RUN_ROOT}/SUCCESS"
 JOIN_LOG="${LOG_DIR}/build_join_datasets.log"
 
+if [[ "$FORCE" == "1" && -d "$RUN_ROOT" ]]; then
+  echo "==> Removing existing multimodal run dir due to --force 1: ${RUN_ROOT}"
+  rm -rf "$RUN_ROOT"
+fi
+
 mkdir -p "$LOG_DIR"
 rm -f "$SUCCESS_MARK"
 
 export DATASET_ID MODE UNIMODAL_ROOT OUT_ROOT ILL_GLOB ONT_GLOB INNER_DIR OUTER_DIR PREFIX
-export BUILD_INNER BUILD_OUTER CHUNK_SIZE DROP_DISAGREE INCLUDE_TEACHER WRITE_META_CSV PROGRESS_EVERY DEBUG_SHARDS
+export BUILD_INNER BUILD_OUTER CHUNK_SIZE DROP_AMBIGUOUS_BIMODAL INCLUDE_TEACHER WRITE_META_CSV PROGRESS_EVERY DEBUG_SHARDS FORCE
 
 write_manifest_json
 
@@ -174,7 +195,7 @@ cmd=(
   --build_inner "$BUILD_INNER"
   --build_outer "$BUILD_OUTER"
   --chunk_size "$CHUNK_SIZE"
-  --drop_disagree "$DROP_DISAGREE"
+  --drop_ambiguous_bimodal "$DROP_AMBIGUOUS_BIMODAL"
   --include_teacher "$INCLUDE_TEACHER"
   --write_meta_csv "$WRITE_META_CSV"
   --progress_every "$PROGRESS_EVERY"
@@ -190,8 +211,10 @@ cmd=(
   echo "==> BUILD_INNER: ${BUILD_INNER}"
   echo "==> BUILD_OUTER: ${BUILD_OUTER}"
   echo "==> CHUNK_SIZE: ${CHUNK_SIZE}"
+  echo "==> DROP_AMBIGUOUS_BIMODAL: ${DROP_AMBIGUOUS_BIMODAL}"
   echo "==> INCLUDE_TEACHER: ${INCLUDE_TEACHER}"
   echo "==> WRITE_META_CSV: ${WRITE_META_CSV}"
+  echo "==> FORCE: ${FORCE}"
   printf '==> RUN CMD: '
   printf '%q ' "${cmd[@]}"
   echo
@@ -201,9 +224,11 @@ cmd=(
 
 if [[ "$BUILD_OUTER" == "1" ]]; then
   compgen -G "${OUTER_DIR}/${PREFIX}_outer_*.npz" > /dev/null || die "No OUTER NPZ shards generated under ${OUTER_DIR}"
+  [[ -f "${OUTER_DIR}/${PREFIX}_outer_report.json" ]] || die "Missing OUTER report JSON under ${OUTER_DIR}"
 fi
 if [[ "$BUILD_INNER" == "1" ]]; then
   compgen -G "${INNER_DIR}/${PREFIX}_inner_*.npz" > /dev/null || die "No INNER NPZ shards generated under ${INNER_DIR}"
+  [[ -f "${INNER_DIR}/${PREFIX}_inner_report.json" ]] || die "Missing INNER report JSON under ${INNER_DIR}"
 fi
 
 echo "ok" > "$SUCCESS_MARK"
