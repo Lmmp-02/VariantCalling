@@ -8,6 +8,9 @@
 /data/**/*.bed
 /data/**/*.tbi
 
+#Artefactos de Python
+**/__pycache__
+
 # Logs de DeepVariant
 /data/**/logs/
 /data/**/intermediate/
