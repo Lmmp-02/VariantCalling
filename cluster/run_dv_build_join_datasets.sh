@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=dv_build_join
-#SBATCH --partition=a64
+#SBATCH --partition=da
 #SBATCH --time=08:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -14,9 +14,13 @@ set -euo pipefail
 
 REPO=/home/lantik-deploy/jlazaro/projects/variantcalling
 cd "$REPO"
-source .venv/bin/activate
-mkdir -p out
 
+if [[ -f .venv/bin/activate ]]; then
+  # shellcheck disable=SC1091
+  source .venv/bin/activate
+fi
+
+mkdir -p out
 
 # Configurables from sbatch --export=ALL,...
 DATASET_ID="${DATASET_ID:-}"
@@ -26,16 +30,18 @@ OUT_ROOT="${OUT_ROOT:-}"
 BUILD_INNER="${BUILD_INNER:-0}"
 BUILD_OUTER="${BUILD_OUTER:-1}"
 CHUNK_SIZE="${CHUNK_SIZE:-40000}"
-DROP_DISAGREE="${DROP_DISAGREE:-1}"
+DROP_AMBIGUOUS_BIMODAL="${DROP_AMBIGUOUS_BIMODAL:-1}"
 INCLUDE_TEACHER="${INCLUDE_TEACHER:-1}"
 WRITE_META_CSV="${WRITE_META_CSV:-0}"
 PROGRESS_EVERY="${PROGRESS_EVERY:-2000}"
 DEBUG_SHARDS="${DEBUG_SHARDS:-0}"
+FORCE="${FORCE:-0}"
 
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 export PYTHONUNBUFFERED=1
 
 [[ -n "$DATASET_ID" ]] || { echo "ERROR: DATASET_ID not set"; exit 1; }
+[[ "$MODE" == "training" || "$MODE" == "calling" ]] || { echo "ERROR: MODE must be training|calling"; exit 1; }
 
 echo "=== ENV CHECK ==="
 hostname
@@ -47,16 +53,22 @@ echo "================="
 echo "=== EFFECTIVE CONFIG ==="
 echo "DATASET_ID=${DATASET_ID}"
 echo "MODE=${MODE}"
+echo "UNIMODAL_ROOT=${UNIMODAL_ROOT:-<canonical>}"
+echo "OUT_ROOT=${OUT_ROOT:-<canonical>}"
 echo "BUILD_INNER=${BUILD_INNER}"
 echo "BUILD_OUTER=${BUILD_OUTER}"
 echo "CHUNK_SIZE=${CHUNK_SIZE}"
+echo "DROP_AMBIGUOUS_BIMODAL=${DROP_AMBIGUOUS_BIMODAL}"
 echo "INCLUDE_TEACHER=${INCLUDE_TEACHER}"
 echo "WRITE_META_CSV=${WRITE_META_CSV}"
+echo "PROGRESS_EVERY=${PROGRESS_EVERY}"
+echo "DEBUG_SHARDS=${DEBUG_SHARDS}"
+echo "FORCE=${FORCE}"
 echo "========================"
 
 RUN_ROOT="${OUT_ROOT:-data/4_out/datasets/multimodal/by_subject}/${DATASET_ID}"
 mkdir -p "${RUN_ROOT}/logs"
-SLURM_LOG="${RUN_ROOT}/logs/slurm_job_${SLURM_JOB_ID}.log"
+SLURM_LOG="${RUN_ROOT}/logs/slurm_job_${SLURM_JOB_ID:-nojob}.log"
 exec > >(tee -a "$SLURM_LOG") 2>&1
 
 cmd=(
@@ -66,12 +78,14 @@ cmd=(
   --build_inner "$BUILD_INNER"
   --build_outer "$BUILD_OUTER"
   --chunk_size "$CHUNK_SIZE"
-  --drop_disagree "$DROP_DISAGREE"
+  --drop_ambiguous_bimodal "$DROP_AMBIGUOUS_BIMODAL"
   --include_teacher "$INCLUDE_TEACHER"
   --write_meta_csv "$WRITE_META_CSV"
   --progress_every "$PROGRESS_EVERY"
   --debug_shards "$DEBUG_SHARDS"
+  --force "$FORCE"
 )
+
 [[ -n "$UNIMODAL_ROOT" ]] && cmd+=( --unimodal_root "$UNIMODAL_ROOT" )
 [[ -n "$OUT_ROOT" ]] && cmd+=( --out_root "$OUT_ROOT" )
 
