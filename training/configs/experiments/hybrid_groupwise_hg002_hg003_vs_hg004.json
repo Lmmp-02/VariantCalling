@@ -1,0 +1,35 @@
+{
+  "experiment_id": "hybrid_groupwise_hg002_hg003_vs_hg004_v1",
+  "model_family": "hybrid_groupwise_3c",
+  "source_type": "multimodal",
+  "train_script": "training/scripts/train/hybrid/train_hybrid_groupwise_3c.py",
+  "split_id": "hg002_hg003_train__hg004_valtest",
+  "default_eval_suites": ["hg005_final_test_40x"],
+  "seed": 0,
+  "hyperparams": {
+    "epochs": 10,
+    "batch_size": 2048,
+    "lr": 0.0003,
+    "weight_decay": 0.0005,
+    "hidden": 512,
+    "dropout": 0.1,
+    "add_masks": true
+  },
+  "selection": {
+    "save_best_on": "val_macro_f1"
+  },
+  "dataset_policy": {
+    "mode": "hybrid",
+    "groups_keep": [1, 10, 11],
+    "group1_target": "label_ont",
+    "group10_target": "label_ill",
+    "group11_policy": "keep_only_if_label_ill_eq_label_ont",
+    "drop_label_mismatch_in_group11": true,
+    "keep_vt_mismatch": true,
+    "join_definition": "locus-level late_merge"
+  },
+  "outputs": {
+    "root_dir": "training/out/experiments"
+  },
+  "notes": "Canonical multimodal experiment using the current main baseline. Hyperparameters inherited from the original groupwise MLP runs."
+}

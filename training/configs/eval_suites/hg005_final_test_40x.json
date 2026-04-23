@@ -1,0 +1,15 @@
+{
+  "eval_suite_id": "hg005_final_test_40x",
+  "source_type": "multimodal",
+  "description": "Final held-out evaluation on HG005 chr20+chr21 at 40x.",
+  "targets": [
+    {
+      "target_id": "hg005_chr20_chr21_40x",
+      "dataset_id": "hg005_chr20_chr21_harmonized_40x",
+      "subject": "HG005",
+      "chroms": ["chr20", "chr21"],
+      "coverage": "40x",
+      "role": "final_test"
+    }
+  ]
+}

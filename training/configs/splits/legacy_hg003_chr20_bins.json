@@ -1,0 +1,20 @@
+{
+  "split_id": "legacy_hg003_chr20_bins",
+  "split_strategy": "locus_bins",
+  "source_type": "multimodal",
+  "description": "Legacy HG003 chr20 split using precomputed locus bins.",
+  "dataset": {
+    "dataset_id": "hg003_chr20",
+    "subject": "HG003",
+    "chroms": ["chr20"]
+  },
+  "bin_source": {
+    "format": "json",
+    "path": "legacy/training/outer_chr20_v1/splits/split_bins.json"
+  },
+  "partitions": {
+    "train": ["train"],
+    "val": ["val"],
+    "test": ["test"]
+  }
+}
