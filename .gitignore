@@ -24,12 +24,6 @@
 /data/4_out/reports/*
 
 # Training
-/training/out/models/*
-/training/out/reports/inner/*
-/training/out/reports/outer/*
-/training/scripts/old/*
-/training/scripts/hybrid_dv/analysis/old/*
-/training/scripts/hybrid_dv/baselines/old/*
 
 # Udocker 
 /.udocker
