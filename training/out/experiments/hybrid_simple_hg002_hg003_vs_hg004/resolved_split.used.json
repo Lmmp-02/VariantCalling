@@ -1,0 +1,94 @@
+{
+  "split_id": "hg002_hg003_train__hg004_valtest",
+  "split_strategy": "scope_partition",
+  "source_type": "multimodal",
+  "description": "Canonical multimodal split: HG002+HG003 for train, HG004 chr21 for val, HG004 chr20 for internal test.",
+  "resolved_at": "2026-04-27T12:10:29+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "split_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/hg002_hg003_train__hg004_valtest.json",
+  "resolved_partitions": {
+    "train": [
+      {
+        "partition": "train",
+        "dataset_id": "hg002_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg002_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "subject": "HG002",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20",
+            "chr21"
+          ]
+        }
+      },
+      {
+        "partition": "train",
+        "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "subject": "HG003",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20",
+            "chr21"
+          ]
+        }
+      }
+    ],
+    "val": [
+      {
+        "partition": "val",
+        "dataset_id": "hg004_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "subject": "HG004",
+        "chroms": [
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr21"
+          ]
+        }
+      }
+    ],
+    "test": [
+      {
+        "partition": "test",
+        "dataset_id": "hg004_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "subject": "HG004",
+        "chroms": [
+          "chr20"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20"
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_train_entries": 2,
+    "n_val_entries": 1,
+    "n_test_entries": 1
+  }
+}

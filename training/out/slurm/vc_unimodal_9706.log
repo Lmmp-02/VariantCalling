@@ -1,0 +1,127 @@
+============================================================
+[Job] Variant Calling unimodal training
+============================================================
+HOSTNAME          : da01.cluster.lantik.lab
+SLURM_JOB_ID      : 9706
+SLURM_JOB_NAME    : vc_unimodal
+CUDA_VISIBLE_DEVICES: 0
+REPO              : /home/lantik-deploy/jlazaro/projects/variantcalling
+EXPERIMENT_CONFIG : training/configs/experiments/unimodal_illumina_hg002_hg003_vs_hg004.json
+RESOLVED_SPLIT    : training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json
+MODALITY          : illumina
+DEVICE            : cuda
+============================================================
+[GPU] nvidia-smi
+Mon Apr 27 14:44:09 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 580.65.06              Driver Version: 580.65.06      CUDA Version: 13.0     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA H100 80GB HBM3          Off |   00000000:1D:00.0 Off |                    0 |
+| N/A   28C    P0             68W /  700W |       0MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA H100 80GB HBM3          Off |   00000000:2F:00.0 Off |                    0 |
+| N/A   30C    P0             69W /  700W |       0MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+|   2  NVIDIA H100 80GB HBM3          Off |   00000000:AF:00.0 Off |                    0 |
+| N/A   27C    P0             68W /  700W |       0MiB /  81559MiB |      0%      Default |
+|                                         |                        |             Disabled |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[Python] CUDA availability
+torch version: 2.8.0+cu128
+cuda available: True
+cuda device count: 1
+cuda device name: NVIDIA H100 80GB HBM3
+[Run] Starting training...
+[Experiment] id=unimodal_illumina_hg002_hg003_vs_hg004
+[Modality]   illumina
+[Device]     cuda
+[Config]     /home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/experiments/unimodal_illumina_hg002_hg003_vs_hg004.json
+[Split]      /home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json
+[SaveDir]    /home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004
+
+[PartitionSummary] train n=402,208 input_dim=2048
+  by_group:                {10: '151,246 (37.6%)', 11: '250,962 (62.4%)'}
+  by_y3:                   {0: '143,996 (35.8%)', 1: '160,364 (39.9%)', 2: '97,848 (24.3%)'}
+  by_mask:                 {'10': '151,246 (37.6%)', '11': '250,962 (62.4%)'}
+  by_vt_mismatch:          {0: '402,208 (100.0%)'}
+  by_variant_type:         {1: '364,663 (90.7%)', 2: '37,545 (9.3%)'}
+  by_chrom:                {'chr20': '253,168 (62.9%)', 'chr21': '149,040 (37.1%)'}
+  by_dataset_id:           {'hg002_chr20_chr21_harmonized_40x': '204,437 (50.8%)', 'hg003_chr20_chr21_harmonized_40x': '197,771 (49.2%)'}
+
+  by_dataset_id_and_group:
+    - hg002_chr20_chr21_harmonized_40x: {'10': 78095, '11': 126342}
+    - hg003_chr20_chr21_harmonized_40x: {'10': 73151, '11': 124620}
+
+  by_dataset_id_and_mask:
+    - hg002_chr20_chr21_harmonized_40x: {'10': 78095, '11': 126342}
+    - hg003_chr20_chr21_harmonized_40x: {'10': 73151, '11': 124620}
+
+  by_dataset_id_and_chrom:
+    - hg002_chr20_chr21_harmonized_40x: {'chr20': 128351, 'chr21': 76086}
+    - hg003_chr20_chr21_harmonized_40x: {'chr20': 124817, 'chr21': 72954}
+
+[PartitionSummary] val n=74,496 input_dim=2048
+  by_group:                {10: '24,293 (32.6%)', 11: '50,203 (67.4%)'}
+  by_y3:                   {0: '23,069 (31.0%)', 1: '30,595 (41.1%)', 2: '20,832 (28.0%)'}
+  by_mask:                 {'10': '24,293 (32.6%)', '11': '50,203 (67.4%)'}
+  by_vt_mismatch:          {0: '74,496 (100.0%)'}
+  by_variant_type:         {1: '66,959 (89.9%)', 2: '7,537 (10.1%)'}
+  by_chrom:                {'chr21': '74,496 (100.0%)'}
+  by_dataset_id:           {'hg004_chr20_chr21_harmonized_40x': '74,496 (100.0%)'}
+
+  by_dataset_id_and_group:
+    - hg004_chr20_chr21_harmonized_40x: {'10': 24293, '11': 50203}
+
+  by_dataset_id_and_mask:
+    - hg004_chr20_chr21_harmonized_40x: {'10': 24293, '11': 50203}
+
+  by_dataset_id_and_chrom:
+    - hg004_chr20_chr21_harmonized_40x: {'chr21': 74496}
+
+[PartitionSummary] test n=126,595 input_dim=2048
+  by_group:                {10: '49,093 (38.8%)', 11: '77,502 (61.2%)'}
+  by_y3:                   {0: '46,823 (37.0%)', 1: '52,165 (41.2%)', 2: '27,607 (21.8%)'}
+  by_mask:                 {'10': '49,093 (38.8%)', '11': '77,502 (61.2%)'}
+  by_vt_mismatch:          {0: '126,595 (100.0%)'}
+  by_variant_type:         {1: '115,322 (91.1%)', 2: '11,273 (8.9%)'}
+  by_chrom:                {'chr20': '126,595 (100.0%)'}
+  by_dataset_id:           {'hg004_chr20_chr21_harmonized_40x': '126,595 (100.0%)'}
+
+  by_dataset_id_and_group:
+    - hg004_chr20_chr21_harmonized_40x: {'10': 49093, '11': 77502}
+
+  by_dataset_id_and_mask:
+    - hg004_chr20_chr21_harmonized_40x: {'10': 49093, '11': 77502}
+
+  by_dataset_id_and_chrom:
+    - hg004_chr20_chr21_harmonized_40x: {'chr20': 126595}
+
+[Model] arch=mlp in_dim=2048 n_classes=3 hidden=512 dropout=0.1
+[Epoch 01] loss=0.02644 | VAL acc=0.9984 macroF1=0.9984 wF1=0.9984 | TEST acc=0.9984 macroF1=0.9986 wF1=0.9984 | best_on=val_macro_f1 score=0.998446
+[Epoch 02] loss=0.00541 | VAL acc=0.9985 macroF1=0.9986 wF1=0.9985 | TEST acc=0.9985 macroF1=0.9986 wF1=0.9985 | best_on=val_macro_f1 score=0.998573
+[Epoch 03] loss=0.00532 | VAL acc=0.9984 macroF1=0.9985 wF1=0.9984 | TEST acc=0.9983 macroF1=0.9984 wF1=0.9983 | best_on=val_macro_f1 score=0.998459
+[Epoch 04] loss=0.00516 | VAL acc=0.9985 macroF1=0.9985 wF1=0.9985 | TEST acc=0.9985 macroF1=0.9986 wF1=0.9985 | best_on=val_macro_f1 score=0.998546
+[Epoch 05] loss=0.00507 | VAL acc=0.9986 macroF1=0.9986 wF1=0.9986 | TEST acc=0.9985 macroF1=0.9986 wF1=0.9985 | best_on=val_macro_f1 score=0.998624
+[Epoch 06] loss=0.00488 | VAL acc=0.9986 macroF1=0.9987 wF1=0.9986 | TEST acc=0.9984 macroF1=0.9986 wF1=0.9984 | best_on=val_macro_f1 score=0.998665
+[Epoch 07] loss=0.00485 | VAL acc=0.9982 macroF1=0.9983 wF1=0.9982 | TEST acc=0.9983 macroF1=0.9984 wF1=0.9983 | best_on=val_macro_f1 score=0.998256
+[Epoch 08] loss=0.00487 | VAL acc=0.9984 macroF1=0.9985 wF1=0.9984 | TEST acc=0.9984 macroF1=0.9985 wF1=0.9984 | best_on=val_macro_f1 score=0.998504
+[Epoch 09] loss=0.00482 | VAL acc=0.9986 macroF1=0.9986 wF1=0.9986 | TEST acc=0.9986 macroF1=0.9987 wF1=0.9986 | best_on=val_macro_f1 score=0.998610
+[Epoch 10] loss=0.00464 | VAL acc=0.9986 macroF1=0.9987 wF1=0.9986 | TEST acc=0.9986 macroF1=0.9987 wF1=0.9986 | best_on=val_macro_f1 score=0.998661
+[Saved] best.pt / final.pt in /home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004
+[Saved] config.json / experiment_config.used.json / resolved_split.used.json in /home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004
+[Saved] best_metrics.json / last_metrics.json in /home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004
+[Done] Training completed.

@@ -1,0 +1,197 @@
+{
+  "args": {
+    "experiment_config": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/experiments/unimodal_ont_hg002_hg003_vs_hg004.json",
+    "resolved_split": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json",
+    "modality": "ont",
+    "save_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_ont_hg002_hg003_vs_hg004",
+    "out_csv": null,
+    "device": "cuda"
+  },
+  "resolved": {
+    "experiment_id": "unimodal_ont_hg002_hg003_vs_hg004",
+    "input_dim": 2048,
+    "n_classes": 3,
+    "device": "cuda",
+    "loss": "CrossEntropyLoss",
+    "class_weights": null,
+    "arch": "mlp",
+    "hidden": 512,
+    "dropout": 0.1,
+    "seed": 0
+  },
+  "dataset_policy": {
+    "mode": "ont_only",
+    "groups_keep": [
+      1,
+      11
+    ],
+    "target": "label (unified), using ont_embeddings, groups {1,11}",
+    "label_source": "dataset.label",
+    "variant_type_source": "dataset.variant_type",
+    "keep_vt_mismatch": true,
+    "join_definition": "locus-level late merge"
+  },
+  "data_summary": {
+    "train": {
+      "name": "train",
+      "n": 830445,
+      "input_dim": 2048,
+      "by_group": {
+        "1": 579483,
+        "11": 250962
+      },
+      "by_y3": {
+        "0": 578117,
+        "1": 157226,
+        "2": 95102
+      },
+      "by_mask": {
+        "01": 579483,
+        "11": 250962
+      },
+      "by_vt_mismatch": {
+        "0": 830445
+      },
+      "by_variant_type": {
+        "1": 233930,
+        "2": 596515
+      },
+      "by_chrom": {
+        "chr20": 536924,
+        "chr21": 293521
+      },
+      "by_dataset_id": {
+        "hg002_chr20_chr21_harmonized_40x": 489736,
+        "hg003_chr20_chr21_harmonized_40x": 340709
+      },
+      "by_dataset_id_and_group": {
+        "hg002_chr20_chr21_harmonized_40x": {
+          "1": 363394,
+          "11": 126342
+        },
+        "hg003_chr20_chr21_harmonized_40x": {
+          "1": 216089,
+          "11": 124620
+        }
+      },
+      "by_dataset_id_and_mask": {
+        "hg002_chr20_chr21_harmonized_40x": {
+          "01": 363394,
+          "11": 126342
+        },
+        "hg003_chr20_chr21_harmonized_40x": {
+          "01": 216089,
+          "11": 124620
+        }
+      },
+      "by_dataset_id_and_chrom": {
+        "hg002_chr20_chr21_harmonized_40x": {
+          "chr20": 317044,
+          "chr21": 172692
+        },
+        "hg003_chr20_chr21_harmonized_40x": {
+          "chr20": 219880,
+          "chr21": 120829
+        }
+      }
+    },
+    "val": {
+      "name": "val",
+      "n": 126576,
+      "input_dim": 2048,
+      "by_group": {
+        "1": 76373,
+        "11": 50203
+      },
+      "by_y3": {
+        "0": 76122,
+        "1": 30161,
+        "2": 20293
+      },
+      "by_mask": {
+        "01": 76373,
+        "11": 50203
+      },
+      "by_vt_mismatch": {
+        "0": 126576
+      },
+      "by_variant_type": {
+        "1": 46256,
+        "2": 80320
+      },
+      "by_chrom": {
+        "chr21": 126576
+      },
+      "by_dataset_id": {
+        "hg004_chr20_chr21_harmonized_40x": 126576
+      },
+      "by_dataset_id_and_group": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "1": 76373,
+          "11": 50203
+        }
+      },
+      "by_dataset_id_and_mask": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "01": 76373,
+          "11": 50203
+        }
+      },
+      "by_dataset_id_and_chrom": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "chr21": 126576
+        }
+      }
+    },
+    "test": {
+      "name": "test",
+      "n": 230798,
+      "input_dim": 2048,
+      "by_group": {
+        "1": 153296,
+        "11": 77502
+      },
+      "by_y3": {
+        "0": 152968,
+        "1": 50972,
+        "2": 26858
+      },
+      "by_mask": {
+        "01": 153296,
+        "11": 77502
+      },
+      "by_vt_mismatch": {
+        "0": 230798
+      },
+      "by_variant_type": {
+        "1": 73223,
+        "2": 157575
+      },
+      "by_chrom": {
+        "chr20": 230798
+      },
+      "by_dataset_id": {
+        "hg004_chr20_chr21_harmonized_40x": 230798
+      },
+      "by_dataset_id_and_group": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "1": 153296,
+          "11": 77502
+        }
+      },
+      "by_dataset_id_and_mask": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "01": 153296,
+          "11": 77502
+        }
+      },
+      "by_dataset_id_and_chrom": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "chr20": 230798
+        }
+      }
+    }
+  },
+  "experiment_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/experiments/unimodal_ont_hg002_hg003_vs_hg004.json",
+  "resolved_split_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json"
+}

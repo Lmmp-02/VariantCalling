@@ -1,0 +1,224 @@
+{
+  "args": {
+    "experiment_config": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/experiments/hybrid_groupwise_hg002_hg003_vs_hg004.json",
+    "resolved_split": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json",
+    "model_family": "hybrid_groupwise_3c",
+    "save_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/hybrid_groupwise_hg002_hg003_vs_hg004",
+    "out_csv": null,
+    "device": "cuda"
+  },
+  "resolved": {
+    "experiment_id": "hybrid_groupwise_hg002_hg003_vs_hg004",
+    "input_dim": 4098,
+    "n_classes": 3,
+    "device": "cuda",
+    "loss": "CrossEntropyLoss",
+    "class_weights": null,
+    "model_family": "hybrid_groupwise_3c",
+    "arch": "mlp",
+    "hidden": 512,
+    "dropout": 0.1,
+    "add_masks": true,
+    "seed": 0
+  },
+  "dataset_policy": {
+    "mode": "hybrid",
+    "groups_keep": [
+      1,
+      10,
+      11
+    ],
+    "target": "label",
+    "label_source": "dataset.label",
+    "variant_type_source": "dataset.variant_type",
+    "keep_vt_mismatch": true,
+    "join_definition": "locus-level late merge"
+  },
+  "model_policy": {
+    "model_family": "hybrid_groupwise_3c",
+    "architecture": "groupwise_3class",
+    "heads": [
+      1,
+      10,
+      11
+    ],
+    "save_best_on": "val_macro_f1"
+  },
+  "data_summary": {
+    "train": {
+      "name": "train",
+      "n": 981691,
+      "input_dim": 4098,
+      "by_group": {
+        "1": 579483,
+        "10": 151246,
+        "11": 250962
+      },
+      "by_y3": {
+        "0": 721321,
+        "1": 162182,
+        "2": 98188
+      },
+      "by_mask": {
+        "01": 579483,
+        "10": 151246,
+        "11": 250962
+      },
+      "by_vt_mismatch": {
+        "0": 981691
+      },
+      "by_variant_type": {
+        "1": 369476,
+        "2": 612215
+      },
+      "by_chrom": {
+        "chr20": 637194,
+        "chr21": 344497
+      },
+      "by_dataset_id": {
+        "hg002_chr20_chr21_harmonized_40x": 567831,
+        "hg003_chr20_chr21_harmonized_40x": 413860
+      },
+      "by_dataset_id_and_group": {
+        "hg002_chr20_chr21_harmonized_40x": {
+          "1": 363394,
+          "10": 78095,
+          "11": 126342
+        },
+        "hg003_chr20_chr21_harmonized_40x": {
+          "1": 216089,
+          "10": 73151,
+          "11": 124620
+        }
+      },
+      "by_dataset_id_and_mask": {
+        "hg002_chr20_chr21_harmonized_40x": {
+          "01": 363394,
+          "10": 78095,
+          "11": 126342
+        },
+        "hg003_chr20_chr21_harmonized_40x": {
+          "01": 216089,
+          "10": 73151,
+          "11": 124620
+        }
+      },
+      "by_dataset_id_and_chrom": {
+        "hg002_chr20_chr21_harmonized_40x": {
+          "chr20": 368405,
+          "chr21": 199426
+        },
+        "hg003_chr20_chr21_harmonized_40x": {
+          "chr20": 268789,
+          "chr21": 145071
+        }
+      }
+    },
+    "val": {
+      "name": "val",
+      "n": 150869,
+      "input_dim": 4098,
+      "by_group": {
+        "1": 76373,
+        "10": 24293,
+        "11": 50203
+      },
+      "by_y3": {
+        "0": 99032,
+        "1": 30963,
+        "2": 20874
+      },
+      "by_mask": {
+        "01": 76373,
+        "10": 24293,
+        "11": 50203
+      },
+      "by_vt_mismatch": {
+        "0": 150869
+      },
+      "by_variant_type": {
+        "1": 67809,
+        "2": 83060
+      },
+      "by_chrom": {
+        "chr21": 150869
+      },
+      "by_dataset_id": {
+        "hg004_chr20_chr21_harmonized_40x": 150869
+      },
+      "by_dataset_id_and_group": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "1": 76373,
+          "10": 24293,
+          "11": 50203
+        }
+      },
+      "by_dataset_id_and_mask": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "01": 76373,
+          "10": 24293,
+          "11": 50203
+        }
+      },
+      "by_dataset_id_and_chrom": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "chr21": 150869
+        }
+      }
+    },
+    "test": {
+      "name": "test",
+      "n": 279891,
+      "input_dim": 4098,
+      "by_group": {
+        "1": 153296,
+        "10": 49093,
+        "11": 77502
+      },
+      "by_y3": {
+        "0": 199549,
+        "1": 52608,
+        "2": 27734
+      },
+      "by_mask": {
+        "01": 153296,
+        "10": 49093,
+        "11": 77502
+      },
+      "by_vt_mismatch": {
+        "0": 279891
+      },
+      "by_variant_type": {
+        "1": 117334,
+        "2": 162557
+      },
+      "by_chrom": {
+        "chr20": 279891
+      },
+      "by_dataset_id": {
+        "hg004_chr20_chr21_harmonized_40x": 279891
+      },
+      "by_dataset_id_and_group": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "1": 153296,
+          "10": 49093,
+          "11": 77502
+        }
+      },
+      "by_dataset_id_and_mask": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "01": 153296,
+          "10": 49093,
+          "11": 77502
+        }
+      },
+      "by_dataset_id_and_chrom": {
+        "hg004_chr20_chr21_harmonized_40x": {
+          "chr20": 279891
+        }
+      }
+    }
+  },
+  "experiment_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/experiments/hybrid_groupwise_hg002_hg003_vs_hg004.json",
+  "resolved_split_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json"
+}

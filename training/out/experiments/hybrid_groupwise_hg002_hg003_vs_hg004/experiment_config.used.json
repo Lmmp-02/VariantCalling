@@ -1,0 +1,43 @@
+{
+  "experiment_id": "hybrid_groupwise_hg002_hg003_vs_hg004",
+  "model_family": "hybrid_groupwise_3c",
+  "source_type": "multimodal",
+  "train_script": "training/scripts/train/hybrid/train_hybrid.py",
+  "split_id": "hg002_hg003_train__hg004_valtest",
+  "default_eval_suites": [
+    "hg005_final_test_40x"
+  ],
+  "seed": 0,
+  "hyperparams": {
+    "epochs": 10,
+    "batch_size": 2048,
+    "lr": 0.0003,
+    "weight_decay": 0.0005,
+    "arch": "mlp",
+    "hidden": 512,
+    "dropout": 0.1,
+    "add_masks": true,
+    "use_class_weights": false,
+    "max_class_weight": 10.0
+  },
+  "selection": {
+    "save_best_on": "val_macro_f1"
+  },
+  "dataset_policy": {
+    "mode": "hybrid",
+    "groups_keep": [
+      1,
+      10,
+      11
+    ],
+    "target": "label",
+    "label_source": "dataset.label",
+    "variant_type_source": "dataset.variant_type",
+    "keep_vt_mismatch": true,
+    "join_definition": "locus-level late merge"
+  },
+  "outputs": {
+    "root_dir": "training/out/experiments"
+  },
+  "notes": "Canonical hybrid groupwise baseline using the unified train_hybrid.py trainer."
+}
