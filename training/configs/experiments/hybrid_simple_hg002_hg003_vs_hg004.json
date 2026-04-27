@@ -1,6 +1,6 @@
 {
-  "experiment_id": "hybrid_groupwise_hg002_hg003_vs_hg004",
-  "model_family": "hybrid_groupwise_3c",
+  "experiment_id": "hybrid_simple_hg002_hg003_vs_hg004",
+  "model_family": "hybrid_simple_3c",
   "source_type": "multimodal",
   "train_script": "training/scripts/train/hybrid/train_hybrid.py",
   "split_id": "hg002_hg003_train__hg004_valtest",
@@ -35,5 +35,5 @@
   "outputs": {
     "root_dir": "training/out/experiments"
   },
-  "notes": "Canonical hybrid groupwise baseline using the unified train_hybrid.py trainer."
+  "notes": "Canonical hybrid simple baseline using the unified train_hybrid.py trainer."
 }

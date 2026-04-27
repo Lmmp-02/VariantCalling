@@ -1,0 +1,25 @@
+{
+  "experiment_id": "unimodal_illumina_hg002_hg003_vs_hg004",
+  "model_family": "illumina_only",
+  "source_type": "multimodal",
+  "train_script": "training/scripts/train/unimodal/train_unimodal.py",
+  "seed": 0,
+  "hyperparams": {
+    "epochs": 10,
+    "batch_size": 2048,
+    "lr": 0.0003,
+    "weight_decay": 0.0005,
+    "arch": "mlp",
+    "hidden": 512,
+    "dropout": 0.1
+  },
+  "selection": {
+    "save_best_on": "val_macro_f1"
+  },
+  "outputs": {
+    "root_dir": "training/out/experiments"
+  },
+  "dataset_policy": {
+    "modality": "illumina"
+  }
+}

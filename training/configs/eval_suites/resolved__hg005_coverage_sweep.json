@@ -1,0 +1,99 @@
+{
+  "eval_suite_id": "hg005_coverage_sweep",
+  "source_type": "multimodal",
+  "description": "Coverage sweep on HG005 chr20+chr21 using a fixed trained model.",
+  "resolved_at": "2026-04-23T09:58:03+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "eval_suite_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/eval_suites/hg005_coverage_sweep.json",
+  "resolved_targets": [
+    {
+      "target_id": "hg005_chr20_chr21_40x",
+      "dataset_id": "hg005_chr20_chr21_harmonized_40x",
+      "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_harmonized_40x/outer",
+      "dataset_path_exists": true,
+      "subject": "HG005",
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
+      "coverage": "40x",
+      "role": "coverage_sweep",
+      "selection": {
+        "type": "eval_suite_target",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ]
+      }
+    },
+    {
+      "target_id": "hg005_chr20_chr21_20x",
+      "dataset_id": "hg005_chr20_chr21_coverage_study_20x",
+      "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_coverage_study_20x/outer",
+      "dataset_path_exists": false,
+      "subject": "HG005",
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
+      "coverage": "20x",
+      "role": "coverage_sweep",
+      "selection": {
+        "type": "eval_suite_target",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ]
+      }
+    },
+    {
+      "target_id": "hg005_chr20_chr21_10x",
+      "dataset_id": "hg005_chr20_chr21_coverage_study_10x",
+      "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_coverage_study_10x/outer",
+      "dataset_path_exists": false,
+      "subject": "HG005",
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
+      "coverage": "10x",
+      "role": "coverage_sweep",
+      "selection": {
+        "type": "eval_suite_target",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ]
+      }
+    },
+    {
+      "target_id": "hg005_chr20_chr21_5x",
+      "dataset_id": "hg005_chr20_chr21_coverage_study_5x",
+      "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_coverage_study_5x/outer",
+      "dataset_path_exists": false,
+      "subject": "HG005",
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
+      "coverage": "5x",
+      "role": "coverage_sweep",
+      "selection": {
+        "type": "eval_suite_target",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "n_targets": 4,
+    "target_ids": [
+      "hg005_chr20_chr21_40x",
+      "hg005_chr20_chr21_20x",
+      "hg005_chr20_chr21_10x",
+      "hg005_chr20_chr21_5x"
+    ]
+  }
+}

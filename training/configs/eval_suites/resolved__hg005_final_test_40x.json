@@ -1,0 +1,36 @@
+{
+  "eval_suite_id": "hg005_final_test_40x",
+  "source_type": "multimodal",
+  "description": "Final held-out evaluation on HG005 chr20+chr21 at 40x.",
+  "resolved_at": "2026-04-27T12:10:42+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "eval_suite_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/eval_suites/hg005_final_test_40x.json",
+  "resolved_targets": [
+    {
+      "target_id": "hg005_chr20_chr21_40x",
+      "dataset_id": "hg005_chr20_chr21_harmonized_40x",
+      "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_harmonized_40x/outer",
+      "dataset_path_exists": true,
+      "subject": "HG005",
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
+      "coverage": "40x",
+      "role": "final_test",
+      "selection": {
+        "type": "eval_suite_target",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "n_targets": 1,
+    "target_ids": [
+      "hg005_chr20_chr21_40x"
+    ]
+  }
+}

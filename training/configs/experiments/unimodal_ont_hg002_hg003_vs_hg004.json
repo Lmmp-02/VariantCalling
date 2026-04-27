@@ -1,8 +1,8 @@
 {
-  "experiment_id": "hybrid_groupwise_hg002_hg003_vs_hg004",
-  "model_family": "hybrid_groupwise_3c",
+  "experiment_id": "unimodal_ont_hg002_hg003_vs_hg004",
+  "model_family": "ont_only",
   "source_type": "multimodal",
-  "train_script": "training/scripts/train/hybrid/train_hybrid.py",
+  "train_script": "training/scripts/train/unimodal/train_unimodal.py",
   "split_id": "hg002_hg003_train__hg004_valtest",
   "default_eval_suites": [
     "hg005_final_test_40x"
@@ -16,7 +16,6 @@
     "arch": "mlp",
     "hidden": 512,
     "dropout": 0.1,
-    "add_masks": true,
     "use_class_weights": false,
     "max_class_weight": 10.0
   },
@@ -24,8 +23,9 @@
     "save_best_on": "val_macro_f1"
   },
   "dataset_policy": {
-    "mode": "hybrid",
-    "groups_keep": [1, 10, 11],
+    "mode": "ont_only",
+    "modality": "ont",
+    "groups_keep": [1, 11],
     "target": "label",
     "label_source": "dataset.label",
     "variant_type_source": "dataset.variant_type",
@@ -35,5 +35,5 @@
   "outputs": {
     "root_dir": "training/out/experiments"
   },
-  "notes": "Canonical hybrid groupwise baseline using the unified train_hybrid.py trainer."
+  "notes": "Canonical unimodal ONT baseline using the unified train_unimodal.py trainer."
 }

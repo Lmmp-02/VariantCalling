@@ -1,0 +1,215 @@
+{
+  "split_id": "legacy_hg003_chr20_bins",
+  "split_strategy": "locus_bins",
+  "source_type": "multimodal",
+  "description": "Legacy HG003 chr20 split using precomputed locus bins.",
+  "resolved_at": "2026-04-23T06:46:25+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "split_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/legacy_hg003_chr20_bins.json",
+  "dataset": {
+    "dataset_id": "hg003_chr20",
+    "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg003_chr20/outer",
+    "dataset_path_exists": false,
+    "subject": "HG003",
+    "chroms": [
+      "chr20"
+    ]
+  },
+  "bin_source": {
+    "format": "json",
+    "path": "/home/lantik-deploy/jlazaro/projects/variantcalling/legacy/training/outer_chr20_v1/splits/split_bins.json"
+  },
+  "bin_size": 1000000,
+  "buffer_bins": 1,
+  "train_bins": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    64
+  ],
+  "val_bins": [
+    24,
+    25,
+    26,
+    31,
+    32,
+    33
+  ],
+  "test_bins": [
+    57,
+    58,
+    59,
+    60,
+    61,
+    62
+  ],
+  "dropped_bins": [
+    23,
+    34,
+    56,
+    63
+  ],
+  "resolved_partitions": {
+    "train": [
+      {
+        "partition": "train",
+        "dataset_id": "hg003_chr20",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg003_chr20/outer",
+        "dataset_path_exists": false,
+        "subject": "HG003",
+        "chroms": [
+          "chr20"
+        ],
+        "selection": {
+          "type": "locus_bins",
+          "bin_source_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/legacy/training/outer_chr20_v1/splits/split_bins.json",
+          "bin_size": 1000000,
+          "bins": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            64
+          ]
+        }
+      }
+    ],
+    "val": [
+      {
+        "partition": "val",
+        "dataset_id": "hg003_chr20",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg003_chr20/outer",
+        "dataset_path_exists": false,
+        "subject": "HG003",
+        "chroms": [
+          "chr20"
+        ],
+        "selection": {
+          "type": "locus_bins",
+          "bin_source_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/legacy/training/outer_chr20_v1/splits/split_bins.json",
+          "bin_size": 1000000,
+          "bins": [
+            24,
+            25,
+            26,
+            31,
+            32,
+            33
+          ]
+        }
+      }
+    ],
+    "test": [
+      {
+        "partition": "test",
+        "dataset_id": "hg003_chr20",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg003_chr20/outer",
+        "dataset_path_exists": false,
+        "subject": "HG003",
+        "chroms": [
+          "chr20"
+        ],
+        "selection": {
+          "type": "locus_bins",
+          "bin_source_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/legacy/training/outer_chr20_v1/splits/split_bins.json",
+          "bin_size": 1000000,
+          "bins": [
+            57,
+            58,
+            59,
+            60,
+            61,
+            62
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_train_bins": 45,
+    "n_val_bins": 6,
+    "n_test_bins": 6,
+    "n_dropped_bins": 4
+  }
+}

@@ -13,7 +13,7 @@
     },
     {
       "target_id": "hg005_chr20_chr21_20x",
-      "dataset_id": "hg005_chr20_chr21_harmonized_20x",
+      "dataset_id": "hg005_chr20_chr21_coverage_study_20x",
       "subject": "HG005",
       "chroms": ["chr20", "chr21"],
       "coverage": "20x",
@@ -21,7 +21,7 @@
     },
     {
       "target_id": "hg005_chr20_chr21_10x",
-      "dataset_id": "hg005_chr20_chr21_harmonized_10x",
+      "dataset_id": "hg005_chr20_chr21_coverage_study_10x",
       "subject": "HG005",
       "chroms": ["chr20", "chr21"],
       "coverage": "10x",
@@ -29,7 +29,7 @@
     },
     {
       "target_id": "hg005_chr20_chr21_5x",
-      "dataset_id": "hg005_chr20_chr21_harmonized_5x",
+      "dataset_id": "hg005_chr20_chr21_coverage_study_5x",
       "subject": "HG005",
       "chroms": ["chr20", "chr21"],
       "coverage": "5x",
