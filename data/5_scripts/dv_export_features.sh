@@ -48,6 +48,11 @@ Model/export settings:
   --emit_identity_meta 0|1   default: 0
                              if 1, export legacy identity metadata:
                              variant_hash, example_id, variant_len
+  --emit_vcf_meta 0|1        default: 1
+                             if 1, export VCF metadata decoded from variant/encoded:
+                             vcf_chrom, vcf_pos, vcf_ref, vcf_alt, variant_key, ...
+  --strict_vcf_meta 0|1      default: 1
+                             if 1, fail when VCF metadata cannot be decoded
 
 Output:
   data/4_out/datasets/unimodal/<dataset_id>/<dv_preset>/<mode>/
@@ -113,6 +118,8 @@ obj = {
     "emb_tensor": os.environ.get("EMB_TENSOR") or None,
     "logits_tensor": os.environ.get("LOGITS_TENSOR") or None,
     "emit_identity_meta": os.environ["EMIT_IDENTITY_META"] == "1",
+    "emit_vcf_meta": os.environ["EMIT_VCF_META"] == "1",
+    "strict_vcf_meta": os.environ["STRICT_VCF_META"] == "1",
     "git_head": os.popen("git rev-parse HEAD 2>/dev/null").read().strip() or None,
 }
 with open(out, "w", encoding="utf-8") as f:
@@ -135,6 +142,8 @@ MAX_RECORDS=""
 EMB_TENSOR=""
 LOGITS_TENSOR=""
 EMIT_IDENTITY_META=0
+EMIT_VCF_META=1
+STRICT_VCF_META=1
 
 [[ $# -eq 0 ]] && { usage; exit 1; }
 while [[ $# -gt 0 ]]; do
@@ -153,6 +162,8 @@ while [[ $# -gt 0 ]]; do
     --emb_tensor) EMB_TENSOR="$2"; shift 2 ;;
     --logits_tensor) LOGITS_TENSOR="$2"; shift 2 ;;
     --emit_identity_meta) EMIT_IDENTITY_META="$2"; shift 2 ;;
+    --emit_vcf_meta) EMIT_VCF_META="$2"; shift 2 ;;
+    --strict_vcf_meta) STRICT_VCF_META="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) die "Unknown arg: $1" ;;
   esac
@@ -163,6 +174,8 @@ done
 [[ "$MODE" == "training" || "$MODE" == "calling" ]] || die "--mode must be training|calling"
 [[ "$RUNTIME" == "docker" || "$RUNTIME" == "udocker" ]] || die "--runtime must be docker|udocker"
 [[ "$EMIT_IDENTITY_META" == "0" || "$EMIT_IDENTITY_META" == "1" ]] || die "--emit_identity_meta must be 0|1"
+[[ "$EMIT_VCF_META" == "0" || "$EMIT_VCF_META" == "1" ]] || die "--emit_vcf_meta must be 0|1"
+[[ "$STRICT_VCF_META" == "0" || "$STRICT_VCF_META" == "1" ]] || die "--strict_vcf_meta must be 0|1"
 container_exists || die "${RUNTIME} not found in PATH"
 
 REPO_ROOT="$(pwd)"
@@ -196,9 +209,10 @@ EXPORT_LOG="${LOG_DIR}/export_features.log"
 
 mkdir -p "$LOG_DIR"
 rm -f "$SUCCESS_MARK"
+rm -f "${OUT_PREFIX}"_*.npz
 
 export DATASET_ID TECH DV_PRESET MODE EXAMPLES_DIR TF_GLOB RUN_DIR OUT_PREFIX
-export RUNTIME IMAGE MODEL_DIR BATCH_SIZE CHUNK_SIZE MAX_RECORDS EMB_TENSOR LOGITS_TENSOR EMIT_IDENTITY_META
+export RUNTIME IMAGE MODEL_DIR BATCH_SIZE CHUNK_SIZE MAX_RECORDS EMB_TENSOR LOGITS_TENSOR EMIT_IDENTITY_META EMIT_VCF_META STRICT_VCF_META
 
 write_manifest_json
 
@@ -210,6 +224,8 @@ cmd=(
   --batch_size "$BATCH_SIZE"
   --chunk_size "$CHUNK_SIZE"
   --emit_identity_meta "$EMIT_IDENTITY_META"
+  --emit_vcf_meta "$EMIT_VCF_META"
+  --strict_vcf_meta "$STRICT_VCF_META"
 )
 [[ -n "$MAX_RECORDS" ]] && cmd+=( --max_records "$MAX_RECORDS" )
 [[ -n "$EMB_TENSOR" ]] && cmd+=( --emb_tensor "$EMB_TENSOR" )
@@ -225,6 +241,8 @@ cmd=(
   echo "==> BATCH_SIZE: ${BATCH_SIZE}"
   echo "==> CHUNK_SIZE: ${CHUNK_SIZE}"
   echo "==> EMIT_IDENTITY_META: ${EMIT_IDENTITY_META}"
+  echo "==> EMIT_VCF_META: ${EMIT_VCF_META}"
+  echo "==> STRICT_VCF_META: ${STRICT_VCF_META}"
   printf '==> RUN CMD: '
   printf '%q ' "${cmd[@]}"
   echo

@@ -52,6 +52,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
+
 # Known-good defaults for many DeepVariant SavedModels (InceptionV3-based).
 DEFAULT_EMB_NAME = "StatefulPartitionedCall/inceptionv3/dropout/Identity:0"
 DEFAULT_LOGITS_NAME = "StatefulPartitionedCall/inceptionv3/classification/BiasAdd:0"
@@ -115,7 +116,210 @@ def _sha1_hex(b: bytes) -> str:
     return hashlib.sha1(b).hexdigest()
 
 
-def parse_example(rec_bytes: bytes, emit_identity_meta: bool = False):
+def _empty_vcf_meta(chrom_l: str, s_l: int, e_l: int) -> dict:
+    return {
+        "vcf_chrom": chrom_l,
+        "vcf_pos": int(s_l + 1) if s_l >= 0 else -1,
+        "vcf_start0": int(s_l),
+        "vcf_end0": int(e_l),
+        "vcf_ref": "",
+        "vcf_alt": "",
+        "vcf_alt_full": "",
+        "variant_key": "",
+        "variant_key_full": "",
+        "variant_encoded_len": 0,
+    }
+
+
+def _make_variant_key(chrom: str, pos: int, ref: str, alt: str) -> str:
+    if not chrom or pos < 1 or not ref or not alt:
+        return ""
+    return f"{chrom}:{pos}:{ref}>{alt}"
+
+
+def _read_len_delimited(buf: bytes, i: int) -> Tuple[bytes, int]:
+    n, i = _read_varint(buf, i)
+    j = i + n
+    if j > len(buf):
+        raise ValueError("Truncated length-delimited protobuf field")
+    return buf[i:j], j
+
+
+def _skip_proto_field(buf: bytes, i: int, wire_type: int) -> int:
+    """
+    Skip an unknown protobuf field.
+
+    Wire types:
+      0 = varint
+      1 = 64-bit
+      2 = length-delimited
+      5 = 32-bit
+    """
+    if wire_type == 0:
+        _, i = _read_varint(buf, i)
+        return i
+
+    if wire_type == 1:
+        j = i + 8
+        if j > len(buf):
+            raise ValueError("Truncated 64-bit protobuf field")
+        return j
+
+    if wire_type == 2:
+        _, j = _read_len_delimited(buf, i)
+        return j
+
+    if wire_type == 5:
+        j = i + 4
+        if j > len(buf):
+            raise ValueError("Truncated 32-bit protobuf field")
+        return j
+
+    raise ValueError(f"Unsupported protobuf wire_type={wire_type}")
+
+
+def decode_nucleus_variant_minimal(variant_bytes: bytes) -> dict:
+    """
+    Minimal manual decoder for Nucleus Variant protobuf.
+
+    Only decodes the fields needed for VCF reconstruction.
+
+    Nucleus Variant field numbers:
+      reference_name    = 14
+      start             = 16
+      end               = 13
+      reference_bases   = 6
+      alternate_bases   = 7
+
+    This intentionally avoids third_party.nucleus.protos.variants_pb2.
+    """
+    out = {
+        "reference_name": "",
+        "start": -1,
+        "end": -1,
+        "reference_bases": "",
+        "alternate_bases": [],
+    }
+
+    i = 0
+    n = len(variant_bytes)
+
+    while i < n:
+        key, i = _read_varint(variant_bytes, i)
+        field_num = key >> 3
+        wire_type = key & 0x07
+
+        # string reference_name = 14;
+        if field_num == 14 and wire_type == 2:
+            b, i = _read_len_delimited(variant_bytes, i)
+            out["reference_name"] = b.decode("utf-8", errors="replace")
+
+        # int64 start = 16;
+        elif field_num == 16 and wire_type == 0:
+            v, i = _read_varint(variant_bytes, i)
+            out["start"] = int(v)
+
+        # int64 end = 13;
+        elif field_num == 13 and wire_type == 0:
+            v, i = _read_varint(variant_bytes, i)
+            out["end"] = int(v)
+
+        # string reference_bases = 6;
+        elif field_num == 6 and wire_type == 2:
+            b, i = _read_len_delimited(variant_bytes, i)
+            out["reference_bases"] = b.decode("utf-8", errors="replace")
+
+        # repeated string alternate_bases = 7;
+        elif field_num == 7 and wire_type == 2:
+            b, i = _read_len_delimited(variant_bytes, i)
+            out["alternate_bases"].append(b.decode("utf-8", errors="replace"))
+
+        else:
+            i = _skip_proto_field(variant_bytes, i, wire_type)
+
+    return out
+
+
+def decode_variant_vcf_meta(
+    variant_bytes: bytes,
+    alt_indices: List[int],
+    chrom_l: str,
+    s_l: int,
+    e_l: int,
+    strict: bool = True,
+) -> dict:
+    """
+    Decode DeepVariant variant/encoded into VCF-oriented metadata.
+
+    This version does NOT depend on Nucleus / variants_pb2.
+
+    VCF POS is 1-based.
+    DeepVariant/Nucleus Variant.start is 0-based.
+    """
+    if not variant_bytes:
+        if strict:
+            raise RuntimeError("Missing variant/encoded while --emit_vcf_meta=1.")
+        return _empty_vcf_meta(chrom_l, s_l, e_l)
+
+    try:
+        v = decode_nucleus_variant_minimal(variant_bytes)
+
+        chrom = str(v["reference_name"])
+        start0 = int(v["start"])
+        end0 = int(v["end"])
+        pos = start0 + 1 if start0 >= 0 else -1
+        ref = str(v["reference_bases"])
+        all_alts = [str(a) for a in v["alternate_bases"]]
+
+        if not chrom or pos < 1 or end0 < 0 or not ref or not all_alts:
+            if strict:
+                raise RuntimeError(
+                    "Decoded variant is missing required VCF fields: "
+                    f"chrom={chrom!r}, start0={start0}, end0={end0}, "
+                    f"ref={ref!r}, alternate_bases={all_alts!r}"
+                )
+            return _empty_vcf_meta(chrom_l, s_l, e_l)
+
+        selected_alts: List[str] = []
+        for idx in alt_indices:
+            if 0 <= int(idx) < len(all_alts):
+                selected_alts.append(all_alts[int(idx)])
+
+        if not selected_alts:
+            if strict:
+                raise RuntimeError(
+                    f"Could not map alt_indices={alt_indices} to alternate_bases={all_alts}"
+                )
+            selected_alts = all_alts
+
+        alt = ",".join(selected_alts)
+        alt_full = ",".join(all_alts)
+
+        return {
+            "vcf_chrom": chrom,
+            "vcf_pos": pos,
+            "vcf_start0": start0,
+            "vcf_end0": end0,
+            "vcf_ref": ref,
+            "vcf_alt": alt,
+            "vcf_alt_full": alt_full,
+            "variant_key": _make_variant_key(chrom, pos, ref, alt),
+            "variant_key_full": _make_variant_key(chrom, pos, ref, alt_full),
+            "variant_encoded_len": len(variant_bytes),
+        }
+
+    except Exception:
+        if strict:
+            raise
+        return _empty_vcf_meta(chrom_l, s_l, e_l)
+
+
+def parse_example(
+    rec_bytes: bytes,
+    emit_identity_meta: bool = False,
+    emit_vcf_meta: bool = True,
+    strict_vcf_meta: bool = True,
+):
     """Parse a DeepVariant TF.train.Example -> image (float32), label (int), locus(str), meta (dict)."""
     ex = tf.train.Example.FromString(rec_bytes)
     f = ex.features.feature
@@ -142,6 +346,7 @@ def parse_example(rec_bytes: bytes, emit_identity_meta: bool = False):
     # These exist in your TFExamples (from sanity check)
     variant_type = int(f["variant_type"].int64_list.value[0]) if "variant_type" in f else -1
     sequencing_type = int(f["sequencing_type"].int64_list.value[0]) if "sequencing_type" in f else -1
+    vb = f["variant/encoded"].bytes_list.value[0] if "variant/encoded" in f else b""
 
     meta = {
         "alt_idx_list": alt_list_str,
@@ -153,18 +358,34 @@ def parse_example(rec_bytes: bytes, emit_identity_meta: bool = False):
         "sequencing_type": sequencing_type,
     }
 
+    if emit_vcf_meta:
+        meta.update(
+            decode_variant_vcf_meta(
+                variant_bytes=vb,
+                alt_indices=alt_list,
+                chrom_l=chrom_l,
+                s_l=s_l,
+                e_l=e_l,
+                strict=strict_vcf_meta,
+            )
+        )    
+
     if emit_identity_meta:
-        vb = f["variant/encoded"].bytes_list.value[0] if "variant/encoded" in f else b""
         vhash = _sha1_hex(vb) if vb else ""
         vlen = len(vb)
-        example_id = f"{vhash}:{alt_list_str}" if vhash else f"{chrom_l}:{s_l}-{e_l}:alt={alt_list_str}"
+
+        if meta.get("variant_key"):
+            example_id = f"{meta['variant_key']}:alt_idx={alt_list_str}"
+        elif vhash:
+            example_id = f"{vhash}:{alt_list_str}"
+        else:
+            example_id = f"{chrom_l}:{s_l}-{e_l}:alt={alt_list_str}"
 
         meta.update({
             "variant_hash": vhash,
             "example_id": example_id,
             "variant_len": vlen,
         })
-
     return img, y, locus, meta
 
 
@@ -257,9 +478,24 @@ def main():
         default=0,
         help="If 1, export legacy identity metadata: variant_hash, example_id, variant_len.",
     )
+    ap.add_argument(
+        "--emit_vcf_meta",
+        type=int,
+        default=1,
+        help="If 1, export VCF-oriented metadata decoded from variant/encoded: "
+             "vcf_chrom, vcf_pos, vcf_ref, vcf_alt, variant_key, etc.",
+    )
+    ap.add_argument(
+        "--strict_vcf_meta",
+        type=int,
+        default=1,
+        help="If 1, fail if VCF metadata cannot be decoded. If 0, emit empty fallback fields.",
+    )    
     args = ap.parse_args()
 
     emit_identity_meta = bool(args.emit_identity_meta)
+    emit_vcf_meta = bool(args.emit_vcf_meta)
+    strict_vcf_meta = bool(args.strict_vcf_meta)    
 
     out_dir = os.path.dirname(args.out_prefix)
     if out_dir:
@@ -272,6 +508,8 @@ def main():
     print("TF version:", tf.__version__, "Eager:", tf.executing_eagerly())
     print("TFRecords:", len(paths))
     print("emit_identity_meta:", emit_identity_meta)
+    print("emit_vcf_meta:", emit_vcf_meta)
+    print("strict_vcf_meta:", strict_vcf_meta)
 
     loaded = tf.saved_model.load(args.model_dir)
     fn = loaded.signatures.get("serving_default")
@@ -321,6 +559,18 @@ def main():
     variant_type: List[int] = []
     sequencing_type: List[int] = []
 
+    if emit_vcf_meta:
+        vcf_chrom: List[str] = []
+        vcf_pos: List[int] = []
+        vcf_start0: List[int] = []
+        vcf_end0: List[int] = []
+        vcf_ref: List[str] = []
+        vcf_alt: List[str] = []
+        vcf_alt_full: List[str] = []
+        variant_key: List[str] = []
+        variant_key_full: List[str] = []
+        variant_encoded_len: List[int] = []
+
     if emit_identity_meta:
         variant_hash: List[str] = []
         example_id: List[str] = []
@@ -356,12 +606,63 @@ def main():
             "sequencing_type": np.asarray(sequencing_type, dtype=np.int64),
         }
 
+        if emit_vcf_meta:
+            payload.update({
+                "vcf_chrom": np.asarray(vcf_chrom, dtype=np.str_),
+                "vcf_pos": np.asarray(vcf_pos, dtype=np.int64),
+                "vcf_start0": np.asarray(vcf_start0, dtype=np.int64),
+                "vcf_end0": np.asarray(vcf_end0, dtype=np.int64),
+                "vcf_ref": np.asarray(vcf_ref, dtype=np.str_),
+                "vcf_alt": np.asarray(vcf_alt, dtype=np.str_),
+                "vcf_alt_full": np.asarray(vcf_alt_full, dtype=np.str_),
+                "variant_key": np.asarray(variant_key, dtype=np.str_),
+                "variant_key_full": np.asarray(variant_key_full, dtype=np.str_),
+                "variant_encoded_len": np.asarray(variant_encoded_len, dtype=np.int64),
+            })
+
         if emit_identity_meta:
             payload.update({
                 "variant_hash": np.asarray(variant_hash, dtype=np.str_),
                 "example_id": np.asarray(example_id, dtype=np.str_),
                 "variant_len": np.asarray(variant_len, dtype=np.int64),
             })
+
+        n_rows = len(X)
+
+        expected_lengths = {
+            "Y": len(Y),
+            "Loc": len(Loc),
+            "alt_idx_list": len(alt_idx_list),
+            "chrom": len(chrom),
+            "locus_start": len(locus_start),
+            "variant_type": len(variant_type),
+            "sequencing_type": len(sequencing_type),
+            "alt_idx0": len(alt_idx0),
+            "locus_end": len(locus_end),
+        }
+
+        if emit_vcf_meta:
+            expected_lengths.update({
+                "vcf_start0": len(vcf_start0),
+                "vcf_end0": len(vcf_end0),
+                "vcf_alt_full": len(vcf_alt_full),
+                "variant_key_full": len(variant_key_full),
+                "variant_encoded_len": len(variant_encoded_len),
+            })
+
+        if emit_identity_meta:
+            expected_lengths.update({
+                "variant_hash": len(variant_hash),
+                "example_id": len(example_id),
+                "variant_len": len(variant_len),
+            })
+
+        bad = {k: v for k, v in expected_lengths.items() if v != n_rows}
+        if bad:
+            raise RuntimeError(
+                f"Accumulator length mismatch before saving {out}: "
+                f"N={n_rows}, bad_lengths={bad}"
+            )
 
         np.savez_compressed(out, **payload)
 
@@ -373,11 +674,61 @@ def main():
         chrom.clear(); locus_start.clear(); locus_end.clear()
         variant_type.clear(); sequencing_type.clear()
 
+        if emit_vcf_meta:
+            vcf_chrom.clear()
+            vcf_pos.clear()
+            vcf_start0.clear()
+            vcf_end0.clear()
+            vcf_ref.clear()
+            vcf_alt.clear()
+            vcf_alt_full.clear()
+            variant_key.clear()
+            variant_key_full.clear()
+            variant_encoded_len.clear()
+
         if emit_identity_meta:
             variant_hash.clear(); example_id.clear(); variant_len.clear()
 
+    def append_exported_row(emb_i, logits_i, probs_i, y_i, locus_i, m: dict) -> None:
+        X.append(emb_i)
+        Lg.append(logits_i)
+        Pb.append(probs_i)
+        Y.append(y_i)
+        Loc.append(locus_i)
+
+        alt_idx_list.append(m.get("alt_idx_list", ""))
+        alt_idx0.append(int(m.get("alt_idx0", 0)))
+
+        chrom.append(m.get("chrom", ""))
+        locus_start.append(int(m.get("locus_start", -1)))
+        locus_end.append(int(m.get("locus_end", -1)))
+        variant_type.append(int(m.get("variant_type", -1)))
+        sequencing_type.append(int(m.get("sequencing_type", -1)))
+
+        if emit_vcf_meta:
+            vcf_chrom.append(m.get("vcf_chrom", ""))
+            vcf_pos.append(int(m.get("vcf_pos", -1)))
+            vcf_start0.append(int(m.get("vcf_start0", -1)))
+            vcf_end0.append(int(m.get("vcf_end0", -1)))
+            vcf_ref.append(m.get("vcf_ref", ""))
+            vcf_alt.append(m.get("vcf_alt", ""))
+            vcf_alt_full.append(m.get("vcf_alt_full", ""))
+            variant_key.append(m.get("variant_key", ""))
+            variant_key_full.append(m.get("variant_key_full", ""))
+            variant_encoded_len.append(int(m.get("variant_encoded_len", 0)))
+
+        if emit_identity_meta:
+            variant_hash.append(m.get("variant_hash", ""))
+            example_id.append(m.get("example_id", ""))
+            variant_len.append(int(m.get("variant_len", 0)))
+
     for rec in ds:
-        img, y, locus, meta = parse_example(rec.numpy(), emit_identity_meta=emit_identity_meta)
+        img, y, locus, meta = parse_example(
+            rec.numpy(),
+            emit_identity_meta=emit_identity_meta,
+            emit_vcf_meta=emit_vcf_meta,
+            strict_vcf_meta=strict_vcf_meta,
+        )
         bx.append(img); by.append(y); bloc.append(locus); bmeta.append(meta)
 
         if len(bx) >= args.batch_size:
@@ -395,23 +746,14 @@ def main():
                     print("Sanity softmax check skipped:", ex)
 
             for i in range(emb.shape[0]):
-                X.append(emb[i]); Lg.append(logits[i]); Pb.append(probs[i])
-                Y.append(by[i]); Loc.append(bloc[i])
-
-                m = bmeta[i]
-                alt_idx_list.append(m.get("alt_idx_list", ""))
-                alt_idx0.append(int(m.get("alt_idx0", 0)))
-
-                chrom.append(m.get("chrom", ""))
-                locus_start.append(int(m.get("locus_start", -1)))
-                locus_end.append(int(m.get("locus_end", -1)))
-                variant_type.append(int(m.get("variant_type", -1)))
-                sequencing_type.append(int(m.get("sequencing_type", -1)))
-
-                if emit_identity_meta:
-                    variant_hash.append(m.get("variant_hash", ""))
-                    example_id.append(m.get("example_id", ""))
-                    variant_len.append(int(m.get("variant_len", 0)))
+                append_exported_row(
+                    emb_i=emb[i],
+                    logits_i=logits[i],
+                    probs_i=probs[i],
+                    y_i=by[i],
+                    locus_i=bloc[i],
+                    m=bmeta[i],
+                )
 
             total += emb.shape[0]
             if total % args.log_every == 0:
@@ -431,23 +773,14 @@ def main():
         emb = emb.numpy(); logits = logits.numpy(); probs = probs.numpy()
 
         for i in range(emb.shape[0]):
-            X.append(emb[i]); Lg.append(logits[i]); Pb.append(probs[i])
-            Y.append(by[i]); Loc.append(bloc[i])
-
-            m = bmeta[i]
-            alt_idx_list.append(m.get("alt_idx_list", ""))
-            alt_idx0.append(int(m.get("alt_idx0", 0)))
-
-            chrom.append(m.get("chrom", ""))
-            locus_start.append(int(m.get("locus_start", -1)))
-            locus_end.append(int(m.get("locus_end", -1)))
-            variant_type.append(int(m.get("variant_type", -1)))
-            sequencing_type.append(int(m.get("sequencing_type", -1)))
-
-            if emit_identity_meta:
-                variant_hash.append(m.get("variant_hash", ""))
-                example_id.append(m.get("example_id", ""))
-                variant_len.append(int(m.get("variant_len", 0)))
+            append_exported_row(
+                emb_i=emb[i],
+                logits_i=logits[i],
+                probs_i=probs[i],
+                y_i=by[i],
+                locus_i=bloc[i],
+                m=bmeta[i],
+            )
 
         total += emb.shape[0]
 
