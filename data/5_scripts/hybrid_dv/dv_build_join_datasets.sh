@@ -43,6 +43,12 @@ Join settings:
   --write_meta_csv 0|1         default: 0
   --progress_every N           default: 2000
   --debug_shards 0|1           default: 0
+  --include_vcf_meta 0|1       default: 1
+                               if 1, propagates VCF metadata when available
+  --vcf_meta_source POLICY     default: prefer_ill
+                               one of: prefer_ill|prefer_ont|ill|ont
+  --drop_vcf_key_mismatch 0|1  default: 0
+                               if 1, drops bimodal rows where Illumina/ONT variant_key differ
 
 Execution control:
   --force 0|1                  default: 0
@@ -85,6 +91,9 @@ obj = {
     "write_meta_csv": os.environ["WRITE_META_CSV"] == "1",
     "progress_every": int(os.environ["PROGRESS_EVERY"]),
     "debug_shards": os.environ["DEBUG_SHARDS"] == "1",
+    "include_vcf_meta": os.environ["INCLUDE_VCF_META"] == "1",
+    "vcf_meta_source": os.environ["VCF_META_SOURCE"],
+    "drop_vcf_key_mismatch": os.environ["DROP_VCF_KEY_MISMATCH"] == "1",
     "force": os.environ["FORCE"] == "1",
     "git_head": os.popen("git rev-parse HEAD 2>/dev/null").read().strip() or None,
 }
@@ -106,6 +115,9 @@ WRITE_META_CSV=0
 PROGRESS_EVERY=2000
 DEBUG_SHARDS=0
 FORCE=0
+INCLUDE_VCF_META=1
+VCF_META_SOURCE="prefer_ill"
+DROP_VCF_KEY_MISMATCH=0
 
 [[ $# -eq 0 ]] && { usage; exit 1; }
 while [[ $# -gt 0 ]]; do
@@ -122,6 +134,9 @@ while [[ $# -gt 0 ]]; do
     --write_meta_csv) WRITE_META_CSV="$2"; shift 2 ;;
     --progress_every) PROGRESS_EVERY="$2"; shift 2 ;;
     --debug_shards) DEBUG_SHARDS="$2"; shift 2 ;;
+    --include_vcf_meta) INCLUDE_VCF_META="$2"; shift 2 ;;
+    --vcf_meta_source) VCF_META_SOURCE="$2"; shift 2 ;;
+    --drop_vcf_key_mismatch) DROP_VCF_KEY_MISMATCH="$2"; shift 2 ;;
     --force) FORCE="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) die "Unknown arg: $1" ;;
@@ -138,6 +153,9 @@ done
 [[ "$DEBUG_SHARDS" == "0" || "$DEBUG_SHARDS" == "1" ]] || die "--debug_shards must be 0|1"
 [[ "$FORCE" == "0" || "$FORCE" == "1" ]] || die "--force must be 0|1"
 (( BUILD_INNER == 1 || BUILD_OUTER == 1 )) || die "Nothing to build."
+[[ "$INCLUDE_VCF_META" == "0" || "$INCLUDE_VCF_META" == "1" ]] || die "--include_vcf_meta must be 0|1"
+[[ "$VCF_META_SOURCE" == "prefer_ill" || "$VCF_META_SOURCE" == "prefer_ont" || "$VCF_META_SOURCE" == "ill" || "$VCF_META_SOURCE" == "ont" ]] || die "--vcf_meta_source must be prefer_ill|prefer_ont|ill|ont"
+[[ "$DROP_VCF_KEY_MISMATCH" == "0" || "$DROP_VCF_KEY_MISMATCH" == "1" ]] || die "--drop_vcf_key_mismatch must be 0|1"
 
 REPO_ROOT="$(pwd)"
 
@@ -182,6 +200,7 @@ rm -f "$SUCCESS_MARK"
 
 export DATASET_ID MODE UNIMODAL_ROOT OUT_ROOT ILL_GLOB ONT_GLOB INNER_DIR OUTER_DIR PREFIX
 export BUILD_INNER BUILD_OUTER CHUNK_SIZE DROP_AMBIGUOUS_BIMODAL INCLUDE_TEACHER WRITE_META_CSV PROGRESS_EVERY DEBUG_SHARDS FORCE
+export INCLUDE_VCF_META VCF_META_SOURCE DROP_VCF_KEY_MISMATCH
 
 write_manifest_json
 
@@ -200,6 +219,9 @@ cmd=(
   --write_meta_csv "$WRITE_META_CSV"
   --progress_every "$PROGRESS_EVERY"
   --debug_shards "$DEBUG_SHARDS"
+  --include_vcf_meta "$INCLUDE_VCF_META"
+  --vcf_meta_source "$VCF_META_SOURCE"
+  --drop_vcf_key_mismatch "$DROP_VCF_KEY_MISMATCH"
 )
 
 {
@@ -214,6 +236,9 @@ cmd=(
   echo "==> DROP_AMBIGUOUS_BIMODAL: ${DROP_AMBIGUOUS_BIMODAL}"
   echo "==> INCLUDE_TEACHER: ${INCLUDE_TEACHER}"
   echo "==> WRITE_META_CSV: ${WRITE_META_CSV}"
+  echo "==> INCLUDE_VCF_META: ${INCLUDE_VCF_META}"
+  echo "==> VCF_META_SOURCE: ${VCF_META_SOURCE}"
+  echo "==> DROP_VCF_KEY_MISMATCH: ${DROP_VCF_KEY_MISMATCH}"
   echo "==> FORCE: ${FORCE}"
   printf '==> RUN CMD: '
   printf '%q ' "${cmd[@]}"

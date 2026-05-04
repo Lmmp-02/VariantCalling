@@ -35,6 +35,9 @@ INCLUDE_TEACHER="${INCLUDE_TEACHER:-1}"
 WRITE_META_CSV="${WRITE_META_CSV:-0}"
 PROGRESS_EVERY="${PROGRESS_EVERY:-2000}"
 DEBUG_SHARDS="${DEBUG_SHARDS:-0}"
+INCLUDE_VCF_META="${INCLUDE_VCF_META:-1}"
+VCF_META_SOURCE="${VCF_META_SOURCE:-prefer_ill}"
+DROP_VCF_KEY_MISMATCH="${DROP_VCF_KEY_MISMATCH:-0}"
 FORCE="${FORCE:-0}"
 
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
@@ -63,12 +66,17 @@ echo "INCLUDE_TEACHER=${INCLUDE_TEACHER}"
 echo "WRITE_META_CSV=${WRITE_META_CSV}"
 echo "PROGRESS_EVERY=${PROGRESS_EVERY}"
 echo "DEBUG_SHARDS=${DEBUG_SHARDS}"
+echo "INCLUDE_VCF_META=${INCLUDE_VCF_META}"
+echo "VCF_META_SOURCE=${VCF_META_SOURCE}"
+echo "DROP_VCF_KEY_MISMATCH=${DROP_VCF_KEY_MISMATCH}"
 echo "FORCE=${FORCE}"
 echo "========================"
 
 RUN_ROOT="${OUT_ROOT:-data/4_out/datasets/multimodal/by_subject}/${DATASET_ID}"
-mkdir -p "${RUN_ROOT}/logs"
-SLURM_LOG="${RUN_ROOT}/logs/slurm_job_${SLURM_JOB_ID:-nojob}.log"
+
+# Keep wrapper log outside RUN_ROOT because the inner runner may delete RUN_ROOT with FORCE=1.
+mkdir -p out
+SLURM_LOG="out/dv_build_join_${DATASET_ID}_${SLURM_JOB_ID:-nojob}.wrapper.log"
 exec > >(tee -a "$SLURM_LOG") 2>&1
 
 cmd=(
@@ -83,6 +91,9 @@ cmd=(
   --write_meta_csv "$WRITE_META_CSV"
   --progress_every "$PROGRESS_EVERY"
   --debug_shards "$DEBUG_SHARDS"
+  --include_vcf_meta "$INCLUDE_VCF_META"
+  --vcf_meta_source "$VCF_META_SOURCE"
+  --drop_vcf_key_mismatch "$DROP_VCF_KEY_MISMATCH"
   --force "$FORCE"
 )
 
