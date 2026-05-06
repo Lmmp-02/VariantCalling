@@ -23,7 +23,11 @@
 # Reports de los datasets
 /data/4_out/reports/*
 
-# Training
+# Calling final
+/training/out/calls/*
+
+# Slurm artifacts
+/training/out/slurm/*
 
 # Udocker 
 /.udocker
