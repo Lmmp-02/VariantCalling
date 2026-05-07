@@ -3,7 +3,7 @@
   "split_strategy": "scope_partition",
   "source_type": "multimodal",
   "description": "Canonical multimodal split: HG002+HG003 for train, HG004 chr21 for val, HG004 chr20 for internal test.",
-  "resolved_at": "2026-04-27T12:10:29+00:00",
+  "resolved_at": "2026-05-07T11:06:42+00:00",
   "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
   "split_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/hg002_hg003_train__hg004_valtest.json",
   "resolved_partitions": {

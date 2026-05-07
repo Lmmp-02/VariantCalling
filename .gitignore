@@ -20,6 +20,9 @@
 /data/4_out/deepvariant/examples/
 /data/4_out/datasets/
 
+# Resultados de deepvariant en modo full
+/data/4_out/deepvariant/full_calls/
+
 # Reports de los datasets
 /data/4_out/reports/*
 
