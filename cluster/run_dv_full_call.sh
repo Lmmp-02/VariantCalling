@@ -4,7 +4,7 @@
 #SBATCH --time=10:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:1
 #SBATCH --account=fsas
 #SBATCH --output=/home/lantik-deploy/jlazaro/projects/variantcalling/out/%x_%j.log
@@ -27,7 +27,7 @@ BAM="${BAM:-}"
 SAMPLE="${SAMPLE:-HG005}"
 SCOPE_ID="${SCOPE_ID:-chr20_chr21}"
 REF="${REF:-}"
-THREADS="${THREADS:-2}"
+THREADS="${THREADS:-1}"
 FORCE="${FORCE:-0}"
 CLEAN_INTERMEDIATE="${CLEAN_INTERMEDIATE:-1}"
 EXTRA_ARGS="${EXTRA_ARGS:-}"
@@ -62,6 +62,7 @@ uname -m
 echo "PWD=$(pwd)"
 echo "udocker=$(command -v udocker || echo '<not found>')"
 echo "OMP_NUM_THREADS=${OMP_NUM_THREADS}"
+echo "SLURM_NTASKS=${SLURM_NTASKS:-<unset>}"
 echo "SLURM_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK:-<unset>}"
 echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-<unset>}"
 command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi || true
