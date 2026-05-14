@@ -270,6 +270,7 @@ def plot_view_comparisons(
     out_dir: Path,
     *,
     annotate_improvement: bool,
+    dataset_label: str,
 ) -> None:
     illumina = ordered_view_df(df, "illumina_view")
     ont = ordered_view_df(df, "ont_view")
@@ -282,7 +283,7 @@ def plot_view_comparisons(
 
     plot_grouped_metric_bars(
         illumina,
-        title="Internal test — Illumina view (HG004 chr20)",
+        title=f"Internal test — Illumina view ({dataset_label})",
         out_path=out_dir / "illumina_view_metrics.png",
         y_limits=shared_ylim,
         annotate_improvement=annotate_improvement,
@@ -291,7 +292,7 @@ def plot_view_comparisons(
 
     plot_grouped_metric_bars(
         ont,
-        title="Internal test — ONT view (HG004 chr20)",
+        title=f"Internal test — ONT view ({dataset_label})",
         out_path=out_dir / "ont_view_metrics.png",
         y_limits=shared_ylim,
         annotate_improvement=annotate_improvement,
@@ -750,6 +751,11 @@ def main() -> None:
         choices=["hybrid_groupwise", "hybrid_simple"],
         help="Multimodal model to use for the practical full-potential plots.",
     )
+    ap.add_argument(
+        "--dataset_label",
+        default="HG004 chr20",
+        help="Label shown in plot titles, e.g. 'HG005 chr20+chr21, 40x train-mode'.",
+    )
     args = ap.parse_args()
 
     csv_path = Path(args.csv)
@@ -797,6 +803,7 @@ def main() -> None:
         df,
         out_dir,
         annotate_improvement=not args.no_annotate_improvement,
+        dataset_label=args.dataset_label,
     )
 
     if not args.skip_variant_best:
