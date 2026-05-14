@@ -1,43 +1,153 @@
-# Datos Archivos grandes que no queremos versionar
+# =============================================================================
+# Raw / large genomic data
+# =============================================================================
+
 /data/**/*.bam
 /data/**/*.bai
+/data/**/*.cram
+/data/**/*.crai
+/data/**/*.sam
+
+/data/**/*.fastq
+/data/**/*.fq
+/data/**/*.fastq.gz
+/data/**/*.fq.gz
+
 /data/**/*.fna
-/data/**/*.fai
+/data/**/*.fna.gz
 /data/**/*.fa
-/data/**/*.gz
+/data/**/*.fa.gz
+/data/**/*.fasta
+/data/**/*.fasta.gz
+/data/**/*.fai
+
+/data/**/*.vcf
+/data/**/*.vcf.gz
+/data/**/*.bcf
 /data/**/*.bed
+/data/**/*.bed.gz
 /data/**/*.tbi
+/data/**/*.csi
 
-#Artefactos de Python
-**/__pycache__
 
-# Logs de DeepVariant
-/data/**/logs/
-/data/**/intermediate/
+# =============================================================================
+# Python / local environment
+# =============================================================================
 
-# Resultados de make_examples en modo train
-/data/4_out/deepvariant/HG003/make_examples_train/
-/data/4_out/deepvariant/examples/
-/data/4_out/datasets/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 
-# Resultados de deepvariant en modo full
+.venv/
+.env
+
+
+# =============================================================================
+# Local / cluster / temporary folders
+# =============================================================================
+
+/out/
+/logs/
+/old/
+/legacy/
+/scrap/
+/tools/
+
+/.udocker/
+
+
+# =============================================================================
+# DeepVariant generated heavy artifacts
+# =============================================================================
+
+# make_examples TFRecords and heavy outputs
+/data/4_out/deepvariant/examples/**/*.tfrecord*
+/data/4_out/deepvariant/examples/**/make_examples*.tfrecord*
+/data/4_out/deepvariant/examples/**/intermediate/
+/data/4_out/deepvariant/examples/**/logs/
+
+# Legacy / old DeepVariant paths
+/data/4_out/deepvariant/HG003/
 /data/4_out/deepvariant/full_calls/
 
-# Reports de los datasets
-/data/4_out/reports/*
 
-# Calling final
-/training/out/calls/*
+# =============================================================================
+# Offline datasets generated from DeepVariant
+# =============================================================================
 
-# Slurm artifacts
-/training/out/slurm/*
+# IMPORTANT:
+# Do NOT ignore the whole /data/4_out/datasets/ folder.
+# We want to version lightweight metadata such as:
+# - join_manifest.json
+# - join_policy.json
+# - *_report.json
+# - export_manifest.json
+# - SUCCESS markers
+#
+# Only ignore heavy dataset shards and optional large metadata tables.
 
-# Udocker 
-/.udocker
+/data/4_out/datasets/**/*.npz
+/data/4_out/datasets/**/*.npy
+/data/4_out/datasets/**/*.pt
+/data/4_out/datasets/**/*.pth
+/data/4_out/datasets/**/*.h5
+/data/4_out/datasets/**/*.hdf5
+/data/4_out/datasets/**/*.parquet
 
-# Cluster
-/out
-/old
-/logs
-/tools
-/.venv
+# Large optional row-level metadata CSVs.
+/data/4_out/datasets/**/*_meta.csv
+
+# Dataset logs/intermediate temp files.
+/data/4_out/datasets/**/logs/
+/data/4_out/datasets/**/intermediate/
+
+# Legacy backup datasets outside the canonical path.
+/data/4_out/datasets/multimodal/by_subject/backup_calling/
+
+
+# =============================================================================
+# Reports
+# =============================================================================
+
+# Keep this folder versionable by default because lightweight reports/audits can
+# be useful for traceability. Ignore only obvious heavy report payloads.
+/data/4_out/reports/**/*.npz
+/data/4_out/reports/**/*.npy
+/data/4_out/reports/**/*.pt
+/data/4_out/reports/**/*.pth
+
+
+# =============================================================================
+# Training outputs
+# =============================================================================
+
+# Keep configs and registries versionable, but ignore generated heavy outputs.
+
+/training/out/calls/
+/training/out/slurm/
+
+/training/out/experiments/**/*.pt
+/training/out/experiments/**/*.pth
+/training/out/experiments/**/*.ckpt
+/training/out/experiments/**/*.npz
+/training/out/experiments/**/*.npy
+
+/training/out/reports/**/*.npz
+/training/out/reports/**/*.npy
+
+# TensorBoard / experiment logs
+/training/out/**/events.out.tfevents.*
+/training/out/**/wandb/
+/training/out/**/lightning_logs/
+
+
+# =============================================================================
+# Editor / OS noise
+# =============================================================================
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
