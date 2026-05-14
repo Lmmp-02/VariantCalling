@@ -1,0 +1,58 @@
+{
+  "manifest_type": "multimodal_join_policy",
+  "manifest_version": "1.0",
+  "generated_at_utc": "2026-05-14T13:17:14+00:00",
+  "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+  "dataset_family": "multimodal_by_subject",
+  "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x",
+  "dataset_subdir": "outer",
+  "join_policy_id": "singleton_locus",
+  "join_policy_label": "Singleton-locus multimodal outer join",
+  "status": "active_baseline_condition",
+  "build_manifest": {
+    "path": "join_manifest.json",
+    "location": "condition_subdir",
+    "move_status": "moved"
+  },
+  "mode": "training",
+  "labels_expected": true,
+  "unit_of_fusion": "locus",
+  "join_type": "outer_over_singleton_loci",
+  "retention_policy": {
+    "keeps_illumina_only": true,
+    "keeps_ont_only": true,
+    "keeps_bimodal": true,
+    "keeps_non_singleton_loci": false,
+    "singleton_definition": "A locus is retained only if it has at most one Illumina candidate and at most one ONT candidate.",
+    "non_singleton_locus_action": "drop_entire_locus"
+  },
+  "matching_policy": {
+    "primary_key": "locus",
+    "variant_key_used_for_fusion": false,
+    "multi_candidate_loci_supported": false,
+    "multi_alt_candidates_supported": false
+  },
+  "ambiguity_policy": {
+    "drop_ambiguous_bimodal": true,
+    "ambiguous_if_label_mismatch": true,
+    "ambiguous_if_variant_type_mismatch": true,
+    "action": "drop_ambiguous_bimodal_rows"
+  },
+  "source_payload": {
+    "include_teacher": true,
+    "include_vcf_meta": true,
+    "vcf_meta_source": "prefer_ill"
+  },
+  "intended_use": [
+    "controlled head-level evaluation",
+    "transfer learning validation on a restricted candidate universe",
+    "late-fusion multimodal benchmark under singleton-locus constraints",
+    "singleton-constrained VCF/hap.py evaluation"
+  ],
+  "not_intended_use": [
+    "claiming full candidate-universe recall",
+    "claiming complete biological variant coverage",
+    "directly interpreting hap.py recall as head-only performance"
+  ],
+  "interpretation_note": "This dataset is valid as a controlled singleton-locus benchmark. Despite the folder name outer/, it should not be interpreted as preserving the full exported DeepVariant candidate universe. Loci with multiple candidates in either modality are excluded before training/evaluation."
+}

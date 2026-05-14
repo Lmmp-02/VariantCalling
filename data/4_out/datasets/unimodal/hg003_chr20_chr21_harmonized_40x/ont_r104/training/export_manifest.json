@@ -1,0 +1,22 @@
+{
+  "batch_size": 64,
+  "chunk_size": 80000,
+  "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+  "dv_preset": "ont_r104",
+  "emb_tensor": null,
+  "emit_identity_meta": false,
+  "emit_vcf_meta": true,
+  "examples_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg003_chr20_chr21_harmonized_40x/ont_r104/training",
+  "git_head": null,
+  "image": "dv19gpu",
+  "logits_tensor": null,
+  "max_records": null,
+  "mode": "training",
+  "model_dir": "/opt/models/ont_r104",
+  "out_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/unimodal/hg003_chr20_chr21_harmonized_40x/ont_r104/training",
+  "out_prefix": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/unimodal/hg003_chr20_chr21_harmonized_40x/ont_r104/training/hg003_chr20_chr21_harmonized_40x.ont_r104.training",
+  "runtime": "udocker",
+  "strict_vcf_meta": true,
+  "tech": "ont",
+  "tfrecord_glob": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg003_chr20_chr21_harmonized_40x/ont_r104/training/make_examples.tfrecord-*-of-*.gz"
+}

@@ -1,0 +1,24 @@
+ 
+ ****************************************************************************** 
+ *                                                                            * 
+ *               STARTING 7d527b41-5396-306c-a5dd-bf925ac8e385                * 
+ *                                                                            * 
+ ****************************************************************************** 
+ executing: python3
+2026-05-13 16:22:50.497120: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2026-05-13 16:22:50.529958: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2026-05-13 16:22:50.724595: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2026-05-13 16:22:50.726047: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI AVX512_BF16 AVX_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2026-05-13 16:22:59.982244: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+glob=/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg005_chr20_chr21_harmonized_40x/illumina_wgs/training/make_examples.tfrecord-*-of-*.gz
+files_found=1
+first_record_feature_keys=alt_allele_indices/encoded,image/encoded,image/shape,label,locus,sequencing_type,variant/encoded,variant_type
+files_inspected=1
+records_checked=3
+label_found=True
+unique_image_shapes=100x221x7
+example_loci=chr20:82603-82603,chr20:83158-83158,chr20:85259-85259
+check_label=OK
+check_width=OK (221)
+validation_status=ok

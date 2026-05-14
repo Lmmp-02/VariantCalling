@@ -1,0 +1,22 @@
+{
+  "batch_size": 64,
+  "chunk_size": 40000,
+  "dataset_id": "hg004_chr20_chr21_coverage_study_10x",
+  "dv_preset": "illumina_wgs",
+  "emb_tensor": null,
+  "emit_identity_meta": false,
+  "emit_vcf_meta": true,
+  "examples_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg004_chr20_chr21_coverage_study_10x/illumina_wgs/training",
+  "git_head": null,
+  "image": "dv19gpu",
+  "logits_tensor": null,
+  "max_records": null,
+  "mode": "training",
+  "model_dir": "/opt/models/wgs",
+  "out_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/unimodal/hg004_chr20_chr21_coverage_study_10x/illumina_wgs/training",
+  "out_prefix": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/unimodal/hg004_chr20_chr21_coverage_study_10x/illumina_wgs/training/hg004_chr20_chr21_coverage_study_10x.illumina_wgs.training",
+  "runtime": "udocker",
+  "strict_vcf_meta": true,
+  "tech": "illumina",
+  "tfrecord_glob": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg004_chr20_chr21_coverage_study_10x/illumina_wgs/training/make_examples.tfrecord-*-of-*.gz"
+}

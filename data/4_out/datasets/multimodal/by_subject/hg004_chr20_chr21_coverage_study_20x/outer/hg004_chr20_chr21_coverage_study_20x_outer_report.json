@@ -1,0 +1,20 @@
+{
+  "bimodal_candidates": 128221,
+  "build_outer": true,
+  "candidate_rows": 507847,
+  "drop_ambiguous_bimodal": true,
+  "drop_vcf_key_mismatch": false,
+  "dropped_ambiguous_bimodal": 414,
+  "dropped_label_mismatch": 209,
+  "dropped_variant_type_mismatch": 216,
+  "dropped_vcf_key_mismatch": 0,
+  "ill_only_candidates": 127248,
+  "include_vcf_meta": true,
+  "kept_rows": 507433,
+  "observed_label_mismatch": 209,
+  "observed_variant_type_mismatch": 216,
+  "observed_vcf_key_mismatch": 255,
+  "ont_only_candidates": 252378,
+  "outer_loci_singleton_pre_filter": 507847,
+  "vcf_meta_source": "prefer_ill"
+}

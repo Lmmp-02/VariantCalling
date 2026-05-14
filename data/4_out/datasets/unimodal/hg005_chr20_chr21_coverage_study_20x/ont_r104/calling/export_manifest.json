@@ -1,0 +1,22 @@
+{
+  "batch_size": 64,
+  "chunk_size": 80000,
+  "dataset_id": "hg005_chr20_chr21_coverage_study_20x",
+  "dv_preset": "ont_r104",
+  "emb_tensor": null,
+  "emit_identity_meta": false,
+  "emit_vcf_meta": true,
+  "examples_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg005_chr20_chr21_coverage_study_20x/ont_r104/calling",
+  "git_head": null,
+  "image": "dv19gpu",
+  "logits_tensor": null,
+  "max_records": null,
+  "mode": "calling",
+  "model_dir": "/opt/models/ont_r104",
+  "out_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/unimodal/hg005_chr20_chr21_coverage_study_20x/ont_r104/calling",
+  "out_prefix": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/unimodal/hg005_chr20_chr21_coverage_study_20x/ont_r104/calling/hg005_chr20_chr21_coverage_study_20x.ont_r104.calling",
+  "runtime": "udocker",
+  "strict_vcf_meta": true,
+  "tech": "ont",
+  "tfrecord_glob": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/deepvariant/examples/hg005_chr20_chr21_coverage_study_20x/ont_r104/calling/make_examples.tfrecord-*-of-*.gz"
+}

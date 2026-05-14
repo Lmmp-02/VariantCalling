@@ -1,0 +1,76 @@
+{
+  "generated_at_utc": "2026-05-14T13:17:14+00:00",
+  "root": "data/4_out/datasets/multimodal/by_subject",
+  "dry_run": false,
+  "force": false,
+  "overwrite_policy": false,
+  "n_outer_dirs": 11,
+  "results": [
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_coverage_study_10x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_coverage_study_10x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_coverage_study_20x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_coverage_study_20x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_coverage_study_5x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_coverage_study_5x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_harmonized_40x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/backup_calling/hg005_chr20_chr21_harmonized_40x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg002_chr20_chr21_harmonized_40x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg002_chr20_chr21_harmonized_40x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_coverage_study_10x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_coverage_study_10x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_coverage_study_20x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_coverage_study_20x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_coverage_study_5x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_coverage_study_5x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_harmonized_40x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_harmonized_40x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    },
+    {
+      "dataset_dir": "data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_harmonized_40x",
+      "outer_dir": "data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_harmonized_40x/outer",
+      "manifest_status": "moved",
+      "policy_status": "written"
+    }
+  ]
+}
