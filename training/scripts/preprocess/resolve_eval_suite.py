@@ -14,6 +14,11 @@ Typical usage:
     python training/scripts/preprocess/resolve_eval_suite.py \
       --eval_suite_config training/configs/eval_suites/hg005_coverage_sweep.json \
       --output_json training/out/experiments/debug_eval/resolved_eval_suite.json
+
+Notes:
+- Multimodal dataset condition is controlled by dataset_selector:
+    - join_policy: e.g. singleton_locus, candidate_key
+    - dataset_subdir: e.g. outer, candidate_key
 """
 
 from __future__ import annotations
@@ -75,21 +80,79 @@ def find_repo_root(start: Path) -> Path:
     )
 
 
-def maybe_dataset_path_multimodal(repo_root: Path, dataset_id: str) -> Tuple[Path, bool]:
+def get_dataset_selector(payload: Dict[str, Any]) -> Dict[str, str]:
+    """
+    Read the dataset-selector block used to choose the physical multimodal
+    dataset condition. Defaults preserve backwards compatibility with the
+    pre-policy configs, where `outer/` implicitly meant singleton_locus.
+    """
+    raw = payload.get("dataset_selector", {})
+    if raw is None:
+        raw = {}
+    if not isinstance(raw, dict):
+        raise SystemExit("[ERROR] dataset_selector must be an object if provided.")
+
+    join_policy = str(raw.get("join_policy", "singleton_locus"))
+    dataset_subdir = str(raw.get("dataset_subdir", "outer"))
+
+    if not join_policy:
+        raise SystemExit("[ERROR] dataset_selector.join_policy cannot be empty.")
+    if not dataset_subdir:
+        raise SystemExit("[ERROR] dataset_selector.dataset_subdir cannot be empty.")
+
+    dataset_subdir_path = Path(dataset_subdir)
+    if dataset_subdir_path.is_absolute() or "/" in dataset_subdir or ".." in dataset_subdir_path.parts:
+        raise SystemExit(
+            f"[ERROR] dataset_selector.dataset_subdir must be a simple subdirectory name. "
+            f"Got: {dataset_subdir}"
+        )
+
+    return {
+        "join_policy": join_policy,
+        "dataset_subdir": dataset_subdir,
+    }
+
+
+def maybe_dataset_path_multimodal(
+    repo_root: Path,
+    dataset_id: str,
+    *,
+    dataset_subdir: str = "outer",
+) -> Tuple[Path, bool]:
     """
     Convention-based path resolution for multimodal datasets.
 
     Preferred:
-      data/4_out/datasets/multimodal/by_subject/<dataset_id>/outer
+      data/4_out/datasets/multimodal/by_subject/<dataset_id>/<dataset_subdir>
 
     Fallback:
-      data/4_out/datasets/multimodal/<dataset_id>/outer
+      data/4_out/datasets/multimodal/<dataset_id>/<dataset_subdir>
+
+    Backwards-compatible default:
+      dataset_subdir='outer'  # singleton_locus condition
     """
-    p1 = repo_root / "data" / "4_out" / "datasets" / "multimodal" / "by_subject" / dataset_id / "outer"
+    p1 = (
+        repo_root
+        / "data"
+        / "4_out"
+        / "datasets"
+        / "multimodal"
+        / "by_subject"
+        / dataset_id
+        / dataset_subdir
+    )
     if p1.exists():
         return p1.resolve(), True
 
-    p2 = repo_root / "data" / "4_out" / "datasets" / "multimodal" / dataset_id / "outer"
+    p2 = (
+        repo_root
+        / "data"
+        / "4_out"
+        / "datasets"
+        / "multimodal"
+        / dataset_id
+        / dataset_subdir
+    )
     if p2.exists():
         return p2.resolve(), True
 
@@ -113,6 +176,10 @@ def resolve_eval_suite(payload: Dict[str, Any], repo_root: Path, config_path: Pa
             f"[ERROR] resolve_eval_suite.py currently only supports source_type='multimodal'. "
             f"Got: {source_type}"
         )
+
+    dataset_selector = get_dataset_selector(payload)
+    join_policy = dataset_selector["join_policy"]
+    dataset_subdir = dataset_selector["dataset_subdir"]
 
     targets = payload["targets"]
     if not isinstance(targets, list) or not targets:
@@ -147,7 +214,11 @@ def resolve_eval_suite(payload: Dict[str, Any], repo_root: Path, config_path: Pa
                 f"[ERROR] targets[{idx}].chroms must be a non-empty list[str]."
             )
 
-        dataset_path, exists = maybe_dataset_path_multimodal(repo_root, dataset_id)
+        dataset_path, exists = maybe_dataset_path_multimodal(
+            repo_root,
+            dataset_id,
+            dataset_subdir=dataset_subdir,
+        )
 
         resolved_targets.append(
             {
@@ -155,14 +226,16 @@ def resolve_eval_suite(payload: Dict[str, Any], repo_root: Path, config_path: Pa
                 "dataset_id": dataset_id,
                 "dataset_path": str(dataset_path),
                 "dataset_path_exists": exists,
+                "join_policy": join_policy,
+                "dataset_subdir": dataset_subdir,
                 "subject": subject,
                 "chroms": chroms,
                 "coverage": coverage,
                 "role": role,
                 "selection": {
                     "type": "eval_suite_target",
-                    "chroms": chroms
-                }
+                    "chroms": chroms,
+                },
             }
         )
 
@@ -170,14 +243,16 @@ def resolve_eval_suite(payload: Dict[str, Any], repo_root: Path, config_path: Pa
         "eval_suite_id": payload["eval_suite_id"],
         "source_type": payload["source_type"],
         "description": payload.get("description", ""),
+        "dataset_selector": dataset_selector,
+        "dataset_policy": payload.get("dataset_policy", {}),
         "resolved_at": utc_now_iso(),
         "repo_root": str(repo_root),
         "eval_suite_config_path": str(config_path.resolve()),
         "resolved_targets": resolved_targets,
         "summary": {
             "n_targets": len(resolved_targets),
-            "target_ids": [t["target_id"] for t in resolved_targets]
-        }
+            "target_ids": [t["target_id"] for t in resolved_targets],
+        },
     }
 
 
@@ -185,12 +260,22 @@ def resolve_eval_suite(payload: Dict[str, Any], repo_root: Path, config_path: Pa
 # Console summary
 # ---------------------------------------------------------------------
 
+def print_dataset_selector_summary(resolved: Dict[str, Any]) -> None:
+    selector = resolved.get("dataset_selector", {})
+    if selector:
+        print("\n[DatasetSelector]")
+        print(f"  join_policy    : {selector.get('join_policy')}")
+        print(f"  dataset_subdir : {selector.get('dataset_subdir')}")
+
+
 def print_eval_suite_summary(resolved: Dict[str, Any]) -> None:
     print("\n[ResolvedEvalSuite]")
     print(f"  eval_suite_id  : {resolved['eval_suite_id']}")
     print(f"  source_type    : {resolved['source_type']}")
     print(f"  config         : {resolved['eval_suite_config_path']}")
     print(f"  resolved_at    : {resolved['resolved_at']}")
+
+    print_dataset_selector_summary(resolved)
 
     print("\n[Targets]")
     for t in resolved["resolved_targets"]:
@@ -203,6 +288,8 @@ def print_eval_suite_summary(resolved: Dict[str, Any]) -> None:
             f"chroms=[{chroms}] "
             f"coverage={t['coverage']} "
             f"role={t['role']} "
+            f"join_policy={t.get('join_policy', 'NA')} "
+            f"dataset_subdir={t.get('dataset_subdir', 'NA')} "
             f"path_exists={exists}"
         )
 
@@ -223,8 +310,10 @@ def main() -> None:
         "--output_json",
         type=str,
         default=None,
-        help="Optional output path for resolved eval suite JSON. "
-             "Default: sibling file next to eval suite config named resolved__<eval_suite_id>.json",
+        help=(
+            "Optional output path for resolved eval suite JSON. "
+            "Default: sibling file next to eval suite config named resolved__<eval_suite_id>.json"
+        ),
     )
     ap.add_argument(
         "--repo_root",

@@ -1,0 +1,48 @@
+{
+  "eval_suite_id": "hg005_final_test_40x__singleton_locus",
+  "source_type": "multimodal",
+  "description": "Final held-out singleton-locus evaluation on HG005 chr20+chr21 at 40x.",
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "dataset_policy": {
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "locus",
+    "physical_subdir": "outer",
+    "interpretation": "This eval suite uses the singleton_locus condition, where non-singleton loci are excluded before evaluation."
+  },
+  "resolved_at": "2026-05-14T13:38:37+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "eval_suite_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/eval_suites/hg005_final_test_40x__singleton_locus.json",
+  "resolved_targets": [
+    {
+      "target_id": "hg005_chr20_chr21_40x__singleton_locus",
+      "dataset_id": "hg005_chr20_chr21_harmonized_40x",
+      "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_harmonized_40x/outer",
+      "dataset_path_exists": true,
+      "join_policy": "singleton_locus",
+      "dataset_subdir": "outer",
+      "subject": "HG005",
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
+      "coverage": "40x",
+      "role": "final_test",
+      "selection": {
+        "type": "eval_suite_target",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "n_targets": 1,
+    "target_ids": [
+      "hg005_chr20_chr21_40x__singleton_locus"
+    ]
+  }
+}
