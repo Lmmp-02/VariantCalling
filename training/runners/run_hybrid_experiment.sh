@@ -6,7 +6,6 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --gres=gpu:1
-#SBATCH --mem=96G
 #SBATCH --account=fsas
 #SBATCH --output=/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/slurm/%x_%j.log
 

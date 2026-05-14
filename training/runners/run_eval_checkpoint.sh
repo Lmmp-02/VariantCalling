@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=vc_call
+#SBATCH --job-name=vc_eval
 #SBATCH --partition=da
-#SBATCH --time=04:00:00
+#SBATCH --time=02:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -17,61 +17,56 @@ cd "$REPO"
 source .venv/bin/activate
 
 mkdir -p training/out/slurm
-mkdir -p training/out/calls
+mkdir -p training/out/reports
 
 # ---------------------------------------------------------------------
 # Required config from sbatch --export=ALL,...
 # ---------------------------------------------------------------------
-: "${EXPERIMENT_DIR:?ERROR: set EXPERIMENT_DIR}"
-: "${DATASET_ID:?ERROR: set DATASET_ID}"
+: "${SOURCE:?ERROR: set SOURCE=teacher or SOURCE=checkpoint}"
+: "${RESOLVED_SPLIT:?ERROR: set RESOLVED_SPLIT}"
 
 # ---------------------------------------------------------------------
-# Optional config
+# Optional/shared config
 # ---------------------------------------------------------------------
-CHECKPOINT="${CHECKPOINT:-best.pt}"
-MODE="${MODE:-calling}"
-INPUT_KIND="${INPUT_KIND:-auto}"
-
+EVAL_PARTITION="${EVAL_PARTITION:-test}"
 DEVICE="${DEVICE:-cuda}"
 BATCH_SIZE="${BATCH_SIZE:-4096}"
-LIMIT_ROWS="${LIMIT_ROWS:-0}"
+OUT_DIR="${OUT_DIR:-training/out/reports/hg005_trainmode_40x_final_eval}"
+NAME="${NAME:-}"
 
-UNIMODAL_ROOT="${UNIMODAL_ROOT:-data/4_out/datasets/unimodal}"
-MULTIMODAL_ROOT="${MULTIMODAL_ROOT:-data/4_out/datasets/multimodal/by_subject}"
+# ---------------------------------------------------------------------
+# Teacher/checkpoint specific config
+# ---------------------------------------------------------------------
+TEACHER="${TEACHER:-}"
+EXPERIMENT_DIR="${EXPERIMENT_DIR:-}"
+CHECKPOINT="${CHECKPOINT:-best.pt}"
 
-UNIMODAL_DIR="${UNIMODAL_DIR:-}"
-MULTIMODAL_OUTER_DIR="${MULTIMODAL_OUTER_DIR:-}"
-
-OUT_DIR="${OUT_DIR:-}"
+OUT_JSON="${OUT_JSON:-}"
 OUT_CSV="${OUT_CSV:-}"
-OUT_REPORT="${OUT_REPORT:-}"
 
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-1}"
 export PYTHONUNBUFFERED=1
 
 echo "============================================================"
-echo "[Job] Variant Calling checkpoint calling"
+echo "[Job] Variant Calling internal eval"
 echo "============================================================"
 echo "HOSTNAME             : $(hostname)"
 echo "SLURM_JOB_ID         : ${SLURM_JOB_ID:-NA}"
 echo "SLURM_JOB_NAME       : ${SLURM_JOB_NAME:-NA}"
 echo "CUDA_VISIBLE_DEVICES : ${CUDA_VISIBLE_DEVICES:-NA}"
 echo "REPO                 : $REPO"
-echo "EXPERIMENT_DIR       : $EXPERIMENT_DIR"
+echo "SOURCE               : $SOURCE"
+echo "TEACHER              : ${TEACHER:-<none>}"
+echo "EXPERIMENT_DIR       : ${EXPERIMENT_DIR:-<none>}"
 echo "CHECKPOINT           : $CHECKPOINT"
-echo "DATASET_ID           : $DATASET_ID"
-echo "MODE                 : $MODE"
-echo "INPUT_KIND           : $INPUT_KIND"
+echo "RESOLVED_SPLIT       : $RESOLVED_SPLIT"
+echo "EVAL_PARTITION       : $EVAL_PARTITION"
 echo "DEVICE               : $DEVICE"
 echo "BATCH_SIZE           : $BATCH_SIZE"
-echo "LIMIT_ROWS           : $LIMIT_ROWS"
-echo "UNIMODAL_ROOT        : $UNIMODAL_ROOT"
-echo "MULTIMODAL_ROOT      : $MULTIMODAL_ROOT"
-echo "UNIMODAL_DIR         : ${UNIMODAL_DIR:-<auto>}"
-echo "MULTIMODAL_OUTER_DIR : ${MULTIMODAL_OUTER_DIR:-<auto>}"
-echo "OUT_DIR              : ${OUT_DIR:-<script default>}"
-echo "OUT_CSV              : ${OUT_CSV:-<script default>}"
-echo "OUT_REPORT           : ${OUT_REPORT:-<script default>}"
+echo "OUT_DIR              : $OUT_DIR"
+echo "NAME                 : ${NAME:-<auto>}"
+echo "OUT_JSON             : ${OUT_JSON:-<auto>}"
+echo "OUT_CSV              : ${OUT_CSV:-<auto>}"
 echo "============================================================"
 
 echo "[GPU] nvidia-smi"
@@ -96,30 +91,44 @@ PY
 fi
 
 cmd=(
-  python -u training/scripts/call/call_checkpoint.py
-  --experiment_dir "$EXPERIMENT_DIR"
-  --checkpoint "$CHECKPOINT"
-  --dataset_id "$DATASET_ID"
-  --mode "$MODE"
-  --input_kind "$INPUT_KIND"
-  --unimodal_root "$UNIMODAL_ROOT"
-  --multimodal_root "$MULTIMODAL_ROOT"
-  --device "$DEVICE"
+  python -u training/scripts/eval/eval_checkpoint.py
+  --source "$SOURCE"
+  --resolved_split "$RESOLVED_SPLIT"
+  --partition "$EVAL_PARTITION"
   --batch_size "$BATCH_SIZE"
-  --limit_rows "$LIMIT_ROWS"
+  --device "$DEVICE"
+  --out_dir "$OUT_DIR"
 )
 
-[[ -n "$UNIMODAL_DIR" ]] && cmd+=( --unimodal_dir "$UNIMODAL_DIR" )
-[[ -n "$MULTIMODAL_OUTER_DIR" ]] && cmd+=( --multimodal_outer_dir "$MULTIMODAL_OUTER_DIR" )
-[[ -n "$OUT_DIR" ]] && cmd+=( --out_dir "$OUT_DIR" )
-[[ -n "$OUT_CSV" ]] && cmd+=( --out_csv "$OUT_CSV" )
-[[ -n "$OUT_REPORT" ]] && cmd+=( --out_report "$OUT_REPORT" )
+if [ -n "$NAME" ]; then
+  cmd+=( --name "$NAME" )
+fi
 
-echo "[Run] Starting checkpoint calling..."
+if [ -n "$OUT_JSON" ]; then
+  cmd+=( --out_json "$OUT_JSON" )
+fi
+
+if [ -n "$OUT_CSV" ]; then
+  cmd+=( --out_csv "$OUT_CSV" )
+fi
+
+if [ "$SOURCE" = "teacher" ]; then
+  : "${TEACHER:?ERROR: SOURCE=teacher requires TEACHER=illumina or TEACHER=ont}"
+  cmd+=( --teacher "$TEACHER" )
+elif [ "$SOURCE" = "checkpoint" ]; then
+  : "${EXPERIMENT_DIR:?ERROR: SOURCE=checkpoint requires EXPERIMENT_DIR}"
+  cmd+=( --experiment_dir "$EXPERIMENT_DIR" )
+  cmd+=( --checkpoint "$CHECKPOINT" )
+else
+  echo "ERROR: unsupported SOURCE=$SOURCE"
+  exit 1
+fi
+
+echo "[Run] Starting internal evaluation..."
 printf 'RUN CMD: '
 printf '%q ' "${cmd[@]}"
 echo
 
 "${cmd[@]}"
 
-echo "[Done] Calling completed."
+echo "[Done] Evaluation completed."
