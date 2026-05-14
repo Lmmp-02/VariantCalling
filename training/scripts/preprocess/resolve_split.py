@@ -22,6 +22,9 @@ Notes:
     - train_bins / val_bins / test_bins at top level
     - a normalized resolved_partitions structure
 - Dataset path derivation is intentionally lightweight and convention-based.
+- Multimodal dataset condition is controlled by dataset_selector:
+    - join_policy: e.g. singleton_locus, candidate_key
+    - dataset_subdir: e.g. outer, candidate_key
 """
 
 from __future__ import annotations
@@ -102,25 +105,83 @@ def resolve_path(path_str: str, *, split_config_path: Path, repo_root: Path) -> 
     return cand2
 
 
-def maybe_dataset_path_multimodal(repo_root: Path, dataset_id: str) -> Tuple[Path, bool]:
+def get_dataset_selector(payload: Dict[str, Any]) -> Dict[str, str]:
+    """
+    Read the dataset-selector block used to choose the physical multimodal
+    dataset condition. Defaults preserve backwards compatibility with the
+    pre-policy configs, where `outer/` implicitly meant singleton_locus.
+    """
+    raw = payload.get("dataset_selector", {})
+    if raw is None:
+        raw = {}
+    if not isinstance(raw, dict):
+        raise SystemExit("[ERROR] dataset_selector must be an object if provided.")
+
+    join_policy = str(raw.get("join_policy", "singleton_locus"))
+    dataset_subdir = str(raw.get("dataset_subdir", "outer"))
+
+    if not join_policy:
+        raise SystemExit("[ERROR] dataset_selector.join_policy cannot be empty.")
+    if not dataset_subdir:
+        raise SystemExit("[ERROR] dataset_selector.dataset_subdir cannot be empty.")
+
+    dataset_subdir_path = Path(dataset_subdir)
+    if dataset_subdir_path.is_absolute() or "/" in dataset_subdir or ".." in dataset_subdir_path.parts:
+        raise SystemExit(
+            f"[ERROR] dataset_selector.dataset_subdir must be a simple subdirectory name. "
+            f"Got: {dataset_subdir}"
+        )
+
+    return {
+        "join_policy": join_policy,
+        "dataset_subdir": dataset_subdir,
+    }
+
+
+def maybe_dataset_path_multimodal(
+    repo_root: Path,
+    dataset_id: str,
+    *,
+    dataset_subdir: str = "outer",
+) -> Tuple[Path, bool]:
     """
     Convention-based path resolution for multimodal datasets.
 
     Preferred:
-      data/4_out/datasets/multimodal/by_subject/<dataset_id>/outer
+      data/4_out/datasets/multimodal/by_subject/<dataset_id>/<dataset_subdir>
 
     Fallback:
-      data/4_out/datasets/multimodal/<dataset_id>/outer
+      data/4_out/datasets/multimodal/<dataset_id>/<dataset_subdir>
+
+    Backwards-compatible default:
+      dataset_subdir='outer'  # singleton_locus condition
     """
-    p1 = repo_root / "data" / "4_out" / "datasets" / "multimodal" / "by_subject" / dataset_id / "outer"
+    p1 = (
+        repo_root
+        / "data"
+        / "4_out"
+        / "datasets"
+        / "multimodal"
+        / "by_subject"
+        / dataset_id
+        / dataset_subdir
+    )
     if p1.exists():
         return p1.resolve(), True
 
-    p2 = repo_root / "data" / "4_out" / "datasets" / "multimodal" / dataset_id / "outer"
+    p2 = (
+        repo_root
+        / "data"
+        / "4_out"
+        / "datasets"
+        / "multimodal"
+        / dataset_id
+        / dataset_subdir
+    )
     if p2.exists():
         return p2.resolve(), True
 
-    # Return preferred path even if missing
+    # Return preferred path even if missing.
     return p1.resolve(), False
 
 
@@ -168,8 +229,11 @@ def resolve_scope_partition(ctx: ResolveContext) -> Dict[str, Any]:
             f"Got: {source_type}"
         )
 
-    resolved_parts: Dict[str, List[Dict[str, Any]]] = {"train": [], "val": [], "test": []}
+    dataset_selector = get_dataset_selector(payload)
+    join_policy = dataset_selector["join_policy"]
+    dataset_subdir = dataset_selector["dataset_subdir"]
 
+    resolved_parts: Dict[str, List[Dict[str, Any]]] = {"train": [], "val": [], "test": []}
     seen_records = set()
 
     for partition_name in ("train", "val", "test"):
@@ -199,9 +263,13 @@ def resolve_scope_partition(ctx: ResolveContext) -> Dict[str, Any]:
                     f"[ERROR] {partition_name}[{idx}].chroms must be a non-empty list[str]."
                 )
 
-            dataset_path, exists = maybe_dataset_path_multimodal(ctx.repo_root, dataset_id)
+            dataset_path, exists = maybe_dataset_path_multimodal(
+                ctx.repo_root,
+                dataset_id,
+                dataset_subdir=dataset_subdir,
+            )
 
-            # Duplicate guard at the declared scope level
+            # Duplicate guard at the declared scope level.
             dup_key = (partition_name, dataset_id, tuple(chroms), coverage)
             if dup_key in seen_records:
                 raise SystemExit(
@@ -216,6 +284,8 @@ def resolve_scope_partition(ctx: ResolveContext) -> Dict[str, Any]:
                     "dataset_id": dataset_id,
                     "dataset_path": str(dataset_path),
                     "dataset_path_exists": exists,
+                    "join_policy": join_policy,
+                    "dataset_subdir": dataset_subdir,
                     "subject": subject,
                     "chroms": chroms,
                     "coverage": coverage,
@@ -231,6 +301,8 @@ def resolve_scope_partition(ctx: ResolveContext) -> Dict[str, Any]:
         "split_strategy": payload["split_strategy"],
         "source_type": payload["source_type"],
         "description": payload.get("description", ""),
+        "dataset_selector": dataset_selector,
+        "dataset_policy": payload.get("dataset_policy", {}),
         "resolved_at": utc_now_iso(),
         "repo_root": str(ctx.repo_root),
         "split_config_path": str(ctx.split_config_path.resolve()),
@@ -259,6 +331,10 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
             f"Got: {source_type}"
         )
 
+    dataset_selector = get_dataset_selector(payload)
+    join_policy = dataset_selector["join_policy"]
+    dataset_subdir = dataset_selector["dataset_subdir"]
+
     dataset = payload["dataset"]
     ensure_keys(dataset, ["dataset_id", "subject", "chroms"], ctx="locus_bins.dataset")
 
@@ -268,7 +344,11 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
     if not isinstance(chroms, list) or not chroms or not all(isinstance(c, str) for c in chroms):
         raise SystemExit("[ERROR] locus_bins.dataset.chroms must be a non-empty list[str].")
 
-    dataset_path, dataset_exists = maybe_dataset_path_multimodal(ctx.repo_root, dataset_id)
+    dataset_path, dataset_exists = maybe_dataset_path_multimodal(
+        ctx.repo_root,
+        dataset_id,
+        dataset_subdir=dataset_subdir,
+    )
 
     bin_source = payload["bin_source"]
     ensure_keys(bin_source, ["format", "path"], ctx="locus_bins.bin_source")
@@ -296,7 +376,6 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
     val_bins = sorted(list(set(int(x) for x in legacy["val_bins"])))
     test_bins = sorted(list(set(int(x) for x in legacy["test_bins"])))
 
-    # Validate requested aliases
     alias_map = {
         "train": train_bins,
         "val": val_bins,
@@ -328,6 +407,8 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
                 "dataset_id": dataset_id,
                 "dataset_path": str(dataset_path),
                 "dataset_path_exists": dataset_exists,
+                "join_policy": join_policy,
+                "dataset_subdir": dataset_subdir,
                 "subject": subject,
                 "chroms": chroms,
                 "selection": {
@@ -344,6 +425,8 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
         "split_strategy": payload["split_strategy"],
         "source_type": payload["source_type"],
         "description": payload.get("description", ""),
+        "dataset_selector": dataset_selector,
+        "dataset_policy": payload.get("dataset_policy", {}),
         "resolved_at": utc_now_iso(),
         "repo_root": str(ctx.repo_root),
         "split_config_path": str(ctx.split_config_path.resolve()),
@@ -351,6 +434,8 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
             "dataset_id": dataset_id,
             "dataset_path": str(dataset_path),
             "dataset_path_exists": dataset_exists,
+            "join_policy": join_policy,
+            "dataset_subdir": dataset_subdir,
             "subject": subject,
             "chroms": chroms,
         },
@@ -378,6 +463,14 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
 # Console summary
 # ---------------------------------------------------------------------
 
+def print_dataset_selector_summary(resolved: Dict[str, Any]) -> None:
+    selector = resolved.get("dataset_selector", {})
+    if selector:
+        print("\n[DatasetSelector]")
+        print(f"  join_policy    : {selector.get('join_policy')}")
+        print(f"  dataset_subdir : {selector.get('dataset_subdir')}")
+
+
 def print_scope_summary(resolved: Dict[str, Any]) -> None:
     print("\n[ResolvedSplit]")
     print(f"  split_id       : {resolved['split_id']}")
@@ -385,6 +478,8 @@ def print_scope_summary(resolved: Dict[str, Any]) -> None:
     print(f"  source_type    : {resolved['source_type']}")
     print(f"  config         : {resolved['split_config_path']}")
     print(f"  resolved_at    : {resolved['resolved_at']}")
+
+    print_dataset_selector_summary(resolved)
 
     print("\n[Partitions]")
     for part in ("train", "val", "test"):
@@ -398,6 +493,8 @@ def print_scope_summary(resolved: Dict[str, Any]) -> None:
                 f"subject={row['subject']} "
                 f"chroms=[{chroms}] "
                 f"coverage={row.get('coverage', 'NA')} "
+                f"join_policy={row.get('join_policy', 'NA')} "
+                f"dataset_subdir={row.get('dataset_subdir', 'NA')} "
                 f"path_exists={exists}"
             )
 
@@ -410,6 +507,8 @@ def print_locus_bins_summary(resolved: Dict[str, Any]) -> None:
     print(f"  config         : {resolved['split_config_path']}")
     print(f"  resolved_at    : {resolved['resolved_at']}")
 
+    print_dataset_selector_summary(resolved)
+
     ds = resolved["dataset"]
     exists = "yes" if ds["dataset_path_exists"] else "no"
 
@@ -417,6 +516,8 @@ def print_locus_bins_summary(resolved: Dict[str, Any]) -> None:
     print(f"  dataset_id     : {ds['dataset_id']}")
     print(f"  subject        : {ds['subject']}")
     print(f"  chroms         : {ds['chroms']}")
+    print(f"  join_policy    : {ds.get('join_policy')}")
+    print(f"  dataset_subdir : {ds.get('dataset_subdir')}")
     print(f"  path_exists    : {exists}")
 
     print("\n[BinSource]")
@@ -447,8 +548,10 @@ def main() -> None:
         "--output_json",
         type=str,
         default=None,
-        help="Optional output path for resolved split JSON. "
-             "Default: sibling file next to split config named resolved__<split_id>.json",
+        help=(
+            "Optional output path for resolved split JSON. "
+            "Default: sibling file next to split config named resolved__<split_id>.json"
+        ),
     )
     ap.add_argument(
         "--repo_root",

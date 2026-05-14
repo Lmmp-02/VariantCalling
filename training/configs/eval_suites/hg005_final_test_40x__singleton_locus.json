@@ -1,0 +1,25 @@
+{
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "eval_suite_id": "hg005_final_test_40x__singleton_locus",
+  "source_type": "multimodal",
+  "description": "Final held-out singleton-locus evaluation on HG005 chr20+chr21 at 40x.",
+  "dataset_policy": {
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "locus",
+    "physical_subdir": "outer",
+    "interpretation": "This eval suite uses the singleton_locus condition, where non-singleton loci are excluded before evaluation."
+  },
+  "targets": [
+    {
+      "target_id": "hg005_chr20_chr21_40x__singleton_locus",
+      "dataset_id": "hg005_chr20_chr21_harmonized_40x",
+      "subject": "HG005",
+      "chroms": ["chr20", "chr21"],
+      "coverage": "40x",
+      "role": "final_test"
+    }
+  ]
+}

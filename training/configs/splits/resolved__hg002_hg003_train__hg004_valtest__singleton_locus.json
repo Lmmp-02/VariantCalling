@@ -1,0 +1,112 @@
+{
+  "split_id": "hg002_hg003_train__hg004_valtest__singleton_locus",
+  "split_strategy": "scope_partition",
+  "source_type": "multimodal",
+  "description": "Canonical multimodal singleton-locus split: HG002+HG003 for train, HG004 chr21 for val, HG004 chr20 for internal test.",
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "dataset_policy": {
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "locus",
+    "physical_subdir": "outer",
+    "interpretation": "This split uses the singleton_locus condition, where non-singleton loci are excluded before training/evaluation."
+  },
+  "resolved_at": "2026-05-14T13:33:58+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "split_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/hg002_hg003_train__hg004_valtest__singleton_locus.json",
+  "resolved_partitions": {
+    "train": [
+      {
+        "partition": "train",
+        "dataset_id": "hg002_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg002_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG002",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20",
+            "chr21"
+          ]
+        }
+      },
+      {
+        "partition": "train",
+        "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG003",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20",
+            "chr21"
+          ]
+        }
+      }
+    ],
+    "val": [
+      {
+        "partition": "val",
+        "dataset_id": "hg004_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG004",
+        "chroms": [
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr21"
+          ]
+        }
+      }
+    ],
+    "test": [
+      {
+        "partition": "test",
+        "dataset_id": "hg004_chr20_chr21_harmonized_40x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg004_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG004",
+        "chroms": [
+          "chr20"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20"
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_train_entries": 2,
+    "n_val_entries": 1,
+    "n_test_entries": 1
+  }
+}

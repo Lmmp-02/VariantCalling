@@ -1,0 +1,48 @@
+{
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "split_id": "hg002_hg003_train__hg004_valtest__singleton_locus",
+  "split_strategy": "scope_partition",
+  "source_type": "multimodal",
+  "description": "Canonical multimodal singleton-locus split: HG002+HG003 for train, HG004 chr21 for val, HG004 chr20 for internal test.",
+  "dataset_policy": {
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "locus",
+    "physical_subdir": "outer",
+    "interpretation": "This split uses the singleton_locus condition, where non-singleton loci are excluded before training/evaluation."
+  },
+  "partitions": {
+    "train": [
+      {
+        "dataset_id": "hg002_chr20_chr21_harmonized_40x",
+        "subject": "HG002",
+        "chroms": ["chr20", "chr21"],
+        "coverage": "40x"
+      },
+      {
+        "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+        "subject": "HG003",
+        "chroms": ["chr20", "chr21"],
+        "coverage": "40x"
+      }
+    ],
+    "val": [
+      {
+        "dataset_id": "hg004_chr20_chr21_harmonized_40x",
+        "subject": "HG004",
+        "chroms": ["chr21"],
+        "coverage": "40x"
+      }
+    ],
+    "test": [
+      {
+        "dataset_id": "hg004_chr20_chr21_harmonized_40x",
+        "subject": "HG004",
+        "chroms": ["chr20"],
+        "coverage": "40x"
+      }
+    ]
+  }
+}
