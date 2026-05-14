@@ -1,0 +1,3 @@
+dataset,tfrecord_glob,tfrecord_files,rows
+illumina,data/4_out/deepvariant/examples/hg005_chr20_chr21_harmonized_40x/illumina_wgs/training/make_examples.tfrecord-*.gz,1,190611
+ont,data/4_out/deepvariant/examples/hg005_chr20_chr21_harmonized_40x/ont_r104/training/make_examples.tfrecord-*.gz,1,520983
