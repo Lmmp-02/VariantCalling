@@ -1,0 +1,489 @@
+{
+  "name": "unimodal_illumina",
+  "partition": "test",
+  "source": {
+    "source": "checkpoint",
+    "experiment_dir": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004",
+    "checkpoint": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004/best.pt",
+    "checkpoint_info": {
+      "model_kind": "unimodal",
+      "modality": "illumina",
+      "model_family": null,
+      "input_dim": 2048,
+      "n_classes": 3,
+      "arch": "mlp",
+      "hidden": 512,
+      "dropout": 0.1,
+      "add_masks": true
+    },
+    "resolved_split_source": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/resolved__hg005_trainmode_10x_final_eval.json",
+    "experiment_metadata": {
+      "config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004/config.json",
+      "experiment_config_used_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004/experiment_config.used.json",
+      "resolved_split_used_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/out/experiments/unimodal_illumina_hg002_hg003_vs_hg004/resolved_split.used.json"
+    }
+  },
+  "data_summary": {
+    "name": "test",
+    "n": 277985,
+    "input_dim": 2048,
+    "by_group": {
+      "10": 160725,
+      "11": 117260
+    },
+    "by_y3": {
+      "0": 155936,
+      "1": 66841,
+      "2": 55208
+    },
+    "by_mask": {
+      "10": 160725,
+      "11": 117260
+    },
+    "by_vt_mismatch": {
+      "0": 277985
+    },
+    "by_variant_type": {
+      "1": 262975,
+      "2": 15010
+    },
+    "by_chrom": {
+      "chr20": 177796,
+      "chr21": 100189
+    },
+    "by_dataset_id": {
+      "hg005_chr20_chr21_coverage_study_10x": 277985
+    },
+    "by_dataset_id_and_group": {
+      "hg005_chr20_chr21_coverage_study_10x": {
+        "10": 160725,
+        "11": 117260
+      }
+    },
+    "by_dataset_id_and_mask": {
+      "hg005_chr20_chr21_coverage_study_10x": {
+        "10": 160725,
+        "11": 117260
+      }
+    },
+    "by_dataset_id_and_chrom": {
+      "hg005_chr20_chr21_coverage_study_10x": {
+        "chr20": 177796,
+        "chr21": 100189
+      }
+    }
+  },
+  "metrics": {
+    "overall_3c": {
+      "n": 277985,
+      "cm": [
+        [
+          152966,
+          2964,
+          6
+        ],
+        [
+          320,
+          66071,
+          450
+        ],
+        [
+          16,
+          516,
+          54676
+        ]
+      ],
+      "acc": 0.9846322643308092,
+      "macro_f1": 0.9830649593714412,
+      "macro_recall": 0.98659918816101,
+      "macro_precision": 0.9798339877575598,
+      "weighted_f1": 0.984732276982139,
+      "per_class": {
+        "0": {
+          "precision": 0.9978082477723709,
+          "recall": 0.9809537246049661,
+          "f1": 0.9893092052071394,
+          "support": 155936
+        },
+        "1": {
+          "precision": 0.9499647740506966,
+          "recall": 0.9884801244744992,
+          "f1": 0.9688398146513859,
+          "support": 66841
+        },
+        "2": {
+          "precision": 0.9917289414496119,
+          "recall": 0.9903637154035647,
+          "f1": 0.9910458582557988,
+          "support": 55208
+        }
+      }
+    },
+    "overall_binary_variant_vs_no": {
+      "n": 277985,
+      "cm": [
+        [
+          152966,
+          2970
+        ],
+        [
+          336,
+          121713
+        ]
+      ],
+      "tp": 121713,
+      "tn": 152966,
+      "fp": 2970,
+      "fn": 336,
+      "acc": 0.9881072719751066,
+      "balanced_acc": 0.9891003659772366,
+      "precision": 0.9761795914439018,
+      "recall": 0.9972470073495072,
+      "specificity": 0.9809537246049661,
+      "f1": 0.9866008462618414,
+      "f2": 0.9929610901986785
+    },
+    "overall_variant_from_cm3": {
+      "tp": 121713,
+      "tn": 152966,
+      "fp": 2970,
+      "fn": 336,
+      "precision": 0.9761795914439018,
+      "recall": 0.9972470073495072,
+      "specificity": 0.9809537246049661,
+      "balanced_acc": 0.9891003659772366,
+      "f1": 0.9866008462618414,
+      "f2": 0.9929610901986785
+    },
+    "by_group": {
+      "10": {
+        "n": 160725,
+        "cm": [
+          [
+            152893,
+            2927,
+            6
+          ],
+          [
+            27,
+            4205,
+            35
+          ],
+          [
+            1,
+            41,
+            590
+          ]
+        ],
+        "acc": 0.9811043708197231,
+        "macro_f1": 0.8866109785499715,
+        "macro_recall": 0.9667306376113952,
+        "macro_precision": 0.8403555988206032,
+        "weighted_f1": 0.9834119079351097,
+        "per_class": {
+          "0": {
+            "precision": 0.9998168989216655,
+            "recall": 0.9811777238714977,
+            "f1": 0.9904096234128449,
+            "support": 155826
+          },
+          "1": {
+            "precision": 0.5862261257493377,
+            "recall": 0.9854698851652213,
+            "f1": 0.7351398601393923,
+            "support": 4267
+          },
+          "2": {
+            "precision": 0.9350237717908068,
+            "recall": 0.9335443037974669,
+            "f1": 0.9342834520976774,
+            "support": 632
+          }
+        },
+        "binary_variant_vs_no": {
+          "n": 160725,
+          "cm": [
+            [
+              152893,
+              2933
+            ],
+            [
+              28,
+              4871
+            ]
+          ],
+          "tp": 4871,
+          "tn": 152893,
+          "fp": 2933,
+          "fn": 28,
+          "acc": 0.9815772281847877,
+          "balanced_acc": 0.9877311358692046,
+          "precision": 0.6241670937980522,
+          "recall": 0.9942845478669115,
+          "specificity": 0.9811777238714977,
+          "f1": 0.7669054554037612,
+          "f2": 0.8888686131384314
+        },
+        "variant_from_cm3": {
+          "tp": 4871,
+          "tn": 152893,
+          "fp": 2933,
+          "fn": 28,
+          "precision": 0.6241670937980522,
+          "recall": 0.9942845478669115,
+          "specificity": 0.9811777238714977,
+          "balanced_acc": 0.9877311358692046,
+          "f1": 0.7669054554037612,
+          "f2": 0.8888686131384314
+        }
+      },
+      "11": {
+        "n": 117260,
+        "cm": [
+          [
+            73,
+            37,
+            0
+          ],
+          [
+            293,
+            61866,
+            415
+          ],
+          [
+            15,
+            475,
+            54086
+          ]
+        ],
+        "acc": 0.9894678492239468,
+        "macro_f1": 0.7597639005636091,
+        "macro_recall": 0.8811144848815498,
+        "macro_precision": 0.7252594962089797,
+        "weighted_f1": 0.9902689815515089,
+        "per_class": {
+          "0": {
+            "precision": 0.1916010498687659,
+            "recall": 0.6636363636363576,
+            "f1": 0.2973523421585106,
+            "support": 110
+          },
+          "1": {
+            "precision": 0.9917919779409408,
+            "recall": 0.9886853964905552,
+            "f1": 0.9902362507197765,
+            "support": 62574
+          },
+          "2": {
+            "precision": 0.9923854608172327,
+            "recall": 0.9910216945177367,
+            "f1": 0.9917031088125402,
+            "support": 54576
+          }
+        },
+        "binary_variant_vs_no": {
+          "n": 117260,
+          "cm": [
+            [
+              73,
+              37
+            ],
+            [
+              308,
+              116842
+            ]
+          ],
+          "tp": 116842,
+          "tn": 73,
+          "fp": 37,
+          "fn": 308,
+          "acc": 0.9970578202285519,
+          "balanced_acc": 0.8305036278275685,
+          "precision": 0.9996834332942616,
+          "recall": 0.9973708920187794,
+          "specificity": 0.6636363636363576,
+          "f1": 0.9985258237222011,
+          "f2": 0.9978325439509923
+        },
+        "variant_from_cm3": {
+          "tp": 116842,
+          "tn": 73,
+          "fp": 37,
+          "fn": 308,
+          "precision": 0.9996834332942616,
+          "recall": 0.9973708920187794,
+          "specificity": 0.6636363636363576,
+          "balanced_acc": 0.8305036278275685,
+          "f1": 0.9985258237222011,
+          "f2": 0.9978325439509923
+        }
+      }
+    },
+    "by_variant_type": {
+      "SNP": {
+        "variant_type": 1,
+        "n": 262975,
+        "cm": [
+          [
+            150928,
+            2658,
+            6
+          ],
+          [
+            305,
+            59532,
+            384
+          ],
+          [
+            15,
+            382,
+            48765
+          ]
+        ],
+        "acc": 0.9857400893621067,
+        "macro_f1": 0.9839461194463192,
+        "macro_recall": 0.9877129374257804,
+        "macro_precision": 0.9804553840978932,
+        "weighted_f1": 0.9858321033347112,
+        "per_class": {
+          "0": {
+            "precision": 0.9978842695440601,
+            "recall": 0.9826553466326371,
+            "f1": 0.9902112583645439,
+            "support": 153592
+          },
+          "1": {
+            "precision": 0.9514159688039379,
+            "recall": 0.9885588083891002,
+            "f1": 0.9696318194028863,
+            "support": 60221
+          },
+          "2": {
+            "precision": 0.992065913945682,
+            "recall": 0.991924657255604,
+            "f1": 0.9919952805715272,
+            "support": 49162
+          }
+        },
+        "binary_variant_vs_no": {
+          "n": 262975,
+          "cm": [
+            [
+              150928,
+              2664
+            ],
+            [
+              320,
+              109063
+            ]
+          ],
+          "tp": 109063,
+          "tn": 150928,
+          "fp": 2664,
+          "fn": 320,
+          "acc": 0.9886529137750737,
+          "balanced_acc": 0.9898649231631869,
+          "precision": 0.9761561663698122,
+          "recall": 0.9970744996937367,
+          "specificity": 0.9826553466326371,
+          "f1": 0.9865044547957553,
+          "f2": 0.9928194167048492
+        },
+        "variant_from_cm3": {
+          "tp": 109063,
+          "tn": 150928,
+          "fp": 2664,
+          "fn": 320,
+          "precision": 0.9761561663698122,
+          "recall": 0.9970744996937367,
+          "specificity": 0.9826553466326371,
+          "balanced_acc": 0.9898649231631869,
+          "f1": 0.9865044547957553,
+          "f2": 0.9928194167048492
+        }
+      },
+      "INDEL": {
+        "variant_type": 2,
+        "n": 15010,
+        "cm": [
+          [
+            2038,
+            306,
+            0
+          ],
+          [
+            15,
+            6539,
+            66
+          ],
+          [
+            1,
+            134,
+            5911
+          ]
+        ],
+        "acc": 0.9652231845436375,
+        "macro_f1": 0.9572517681387915,
+        "macro_recall": 0.9449631543099573,
+        "macro_precision": 0.9727072368981465,
+        "weighted_f1": 0.9649356416236755,
+        "per_class": {
+          "0": {
+            "precision": 0.9922103213242449,
+            "recall": 0.8694539249146754,
+            "f1": 0.9267849022277873,
+            "support": 2344
+          },
+          "1": {
+            "precision": 0.9369537182977503,
+            "recall": 0.9877643504531721,
+            "f1": 0.9616883594376943,
+            "support": 6620
+          },
+          "2": {
+            "precision": 0.9889576710724443,
+            "recall": 0.9776711875620243,
+            "f1": 0.983282042750893,
+            "support": 6046
+          }
+        },
+        "binary_variant_vs_no": {
+          "n": 15010,
+          "cm": [
+            [
+              2038,
+              306
+            ],
+            [
+              16,
+              12650
+            ]
+          ],
+          "tp": 12650,
+          "tn": 2038,
+          "fp": 306,
+          "fn": 16,
+          "acc": 0.9785476349100599,
+          "balanced_acc": 0.9340953502672225,
+          "precision": 0.9763815992590305,
+          "recall": 0.9987367756197694,
+          "specificity": 0.8694539249146754,
+          "f1": 0.9874326750443833,
+          "f2": 0.9941842187989167
+        },
+        "variant_from_cm3": {
+          "tp": 12650,
+          "tn": 2038,
+          "fp": 306,
+          "fn": 16,
+          "precision": 0.9763815992590305,
+          "recall": 0.9987367756197694,
+          "specificity": 0.8694539249146754,
+          "balanced_acc": 0.9340953502672225,
+          "f1": 0.9874326750443833,
+          "f2": 0.9941842187989167
+        }
+      }
+    }
+  }
+}
