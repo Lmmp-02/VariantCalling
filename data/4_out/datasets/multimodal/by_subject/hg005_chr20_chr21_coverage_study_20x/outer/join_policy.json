@@ -1,0 +1,56 @@
+{
+  "ambiguity_policy": {
+    "action": "drop_ambiguous_bimodal_rows",
+    "ambiguous_if_label_mismatch": true,
+    "ambiguous_if_variant_type_mismatch": true,
+    "drop_ambiguous_bimodal": true
+  },
+  "build_manifest": {
+    "location": "condition_subdir",
+    "path": "join_manifest.json"
+  },
+  "dataset_family": "multimodal_by_subject",
+  "dataset_id": "hg005_chr20_chr21_coverage_study_20x",
+  "dataset_subdir": "outer",
+  "generated_at_utc": "2026-05-29T14:18:26+00:00",
+  "intended_use": [
+    "controlled head-level evaluation",
+    "transfer learning validation on a restricted candidate universe",
+    "late-fusion multimodal benchmark under singleton-locus constraints",
+    "singleton-constrained VCF/hap.py evaluation"
+  ],
+  "interpretation_note": "This dataset is valid as a controlled singleton-locus benchmark. Despite the folder name outer/, it should not be interpreted as preserving the full exported DeepVariant candidate universe. Loci with multiple candidates in either modality are excluded before training/evaluation.",
+  "join_policy_id": "singleton_locus",
+  "join_policy_label": "Singleton-locus multimodal join",
+  "join_type": "outer_over_singleton_loci",
+  "manifest_type": "multimodal_join_policy",
+  "manifest_version": "1.0",
+  "matching_policy": {
+    "multi_alt_candidates_supported": false,
+    "multi_candidate_loci_supported": false,
+    "primary_key": "locus",
+    "variant_key_used_for_fusion": false
+  },
+  "not_intended_use": [
+    "claiming full candidate-universe recall",
+    "claiming complete biological variant coverage",
+    "directly interpreting hap.py recall as head-only performance"
+  ],
+  "retention_policy": {
+    "keeps_bimodal": true,
+    "keeps_illumina_only": true,
+    "keeps_non_singleton_loci": false,
+    "keeps_ont_only": true,
+    "non_singleton_locus_action": "drop_entire_locus",
+    "singleton_definition": "A locus is retained only if it has at most one Illumina candidate and at most one ONT candidate."
+  },
+  "status": "active_baseline_condition",
+  "unit_of_fusion": "locus",
+  "vcf_policy": {
+    "drop_vcf_key_mismatch": false,
+    "include_vcf_meta": true,
+    "variant_key_used_for_join": false,
+    "variant_key_used_only_as_metadata": true,
+    "vcf_meta_source": "prefer_ill"
+  }
+}
