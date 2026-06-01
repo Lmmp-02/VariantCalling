@@ -1,0 +1,18 @@
+{
+  "split_id": "hg005_trainmode_20x_final_eval",
+  "split_strategy": "scope_partition",
+  "source_type": "multimodal",
+  "description": "Diagnostic supervised evaluation on HG005 chr20+chr21 20x generated with make_examples in training mode.",
+  "partitions": {
+    "train": [],
+    "val": [],
+    "test": [
+      {
+        "dataset_id": "hg005_chr20_chr21_coverage_study_20x",
+        "subject": "HG005",
+        "chroms": ["chr20", "chr21"],
+        "coverage": "20x"
+      }
+    ]
+  }
+}

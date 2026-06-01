@@ -1,0 +1,46 @@
+{
+  "split_id": "hg005_trainmode_10x_final_eval",
+  "split_strategy": "scope_partition",
+  "source_type": "multimodal",
+  "description": "Diagnostic supervised evaluation on HG005 chr20+chr21 10x generated with make_examples in training mode.",
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "dataset_policy": {},
+  "resolved_at": "2026-05-29T14:25:11+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "split_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/hg005_trainmode_10x_final_eval.json",
+  "resolved_partitions": {
+    "train": [],
+    "val": [],
+    "test": [
+      {
+        "partition": "test",
+        "dataset_id": "hg005_chr20_chr21_coverage_study_10x",
+        "dataset_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/data/4_out/datasets/multimodal/by_subject/hg005_chr20_chr21_coverage_study_10x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG005",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "10x",
+        "selection": {
+          "type": "scope_partition",
+          "chroms": [
+            "chr20",
+            "chr21"
+          ]
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_train_entries": 0,
+    "n_val_entries": 0,
+    "n_test_entries": 1
+  }
+}
