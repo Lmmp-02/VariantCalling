@@ -24,6 +24,9 @@ from typing import Any, Dict, List, Sequence, Union
 import numpy as np
 
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
 # ---------------------------------------------------------------------
 # Dataclasses
 # ---------------------------------------------------------------------
@@ -94,8 +97,15 @@ def load_resolved_split(path_or_obj: Union[str, Path, Dict[str, Any]]) -> Dict[s
 # Filesystem / NPZ helpers
 # ---------------------------------------------------------------------
 
-def list_npz_shards(dataset_dir: Union[str, Path]) -> List[Path]:
+def resolve_dataset_dir(dataset_dir: Union[str, Path]) -> Path:
     dataset_dir = Path(dataset_dir)
+    if not dataset_dir.is_absolute():
+        dataset_dir = REPO_ROOT / dataset_dir
+    return dataset_dir.resolve()
+
+
+def list_npz_shards(dataset_dir: Union[str, Path]) -> List[Path]:
+    dataset_dir = resolve_dataset_dir(dataset_dir)
     shards = sorted(dataset_dir.glob("*.npz"))
     if not shards:
         raise SystemExit(f"[ERROR] No NPZ shards found in dataset_dir: {dataset_dir}")
@@ -138,6 +148,33 @@ def _row_mask_locus_bins(npz: np.lib.npyio.NpzFile, bins: Sequence[int], bin_siz
     return keep.astype(bool)
 
 
+def _row_mask_chrom_locus_bins(
+    npz: np.lib.npyio.NpzFile,
+    bins_by_chrom: Dict[str, Sequence[int]],
+    bin_size: int,
+) -> np.ndarray:
+    """Select 1 Mb-style bins while keeping chromosome identity in the key."""
+    _require_npz_keys(npz, ["chrom", "locus_start"], ctx="chrom_locus_bins")
+    if bin_size is None or int(bin_size) <= 0:
+        raise SystemExit("[ERROR] chrom_locus_bins selection requires a positive bin_size.")
+    if not isinstance(bins_by_chrom, dict) or not bins_by_chrom:
+        raise SystemExit("[ERROR] chrom_locus_bins selection requires bins_by_chrom.")
+
+    chrom_arr = _as_str_array(npz["chrom"])
+    starts = npz["locus_start"].astype(np.int64)
+    row_bins = starts // int(bin_size)
+    keep = np.zeros(chrom_arr.shape[0], dtype=bool)
+
+    for chrom, bins in bins_by_chrom.items():
+        if not bins:
+            continue
+        chrom_keep = chrom_arr == str(chrom)
+        bin_keep = np.isin(row_bins, np.asarray(list(bins), dtype=np.int64))
+        keep |= chrom_keep & bin_keep
+
+    return keep
+
+
 def _row_mask_from_entry(npz: np.lib.npyio.NpzFile, entry: Dict[str, Any]) -> np.ndarray:
     if "selection" not in entry:
         raise SystemExit("[ERROR] resolved split entry missing 'selection'.")
@@ -157,6 +194,17 @@ def _row_mask_from_entry(npz: np.lib.npyio.NpzFile, entry: Dict[str, Any]) -> np
         if bins is None:
             raise SystemExit("[ERROR] locus_bins selection requires bins.")
         return _row_mask_locus_bins(npz, bins=bins, bin_size=int(bin_size))
+
+    if sel_type == "chrom_locus_bins":
+        bins_by_chrom = sel.get("bins_by_chrom", None)
+        bin_size = sel.get("bin_size", None)
+        if bins_by_chrom is None:
+            raise SystemExit("[ERROR] chrom_locus_bins selection requires bins_by_chrom.")
+        return _row_mask_chrom_locus_bins(
+            npz,
+            bins_by_chrom=bins_by_chrom,
+            bin_size=int(bin_size),
+        )
 
     raise SystemExit(f"[ERROR] Unsupported selection type in resolved split entry: {sel_type}")
 
@@ -252,7 +300,7 @@ def _build_partition_index(
 
     for entry_idx, entry in enumerate(entries):
         dataset_id = str(entry.get("dataset_id", f"entry_{entry_idx}"))
-        dataset_path = Path(entry["dataset_path"])
+        dataset_path = resolve_dataset_dir(entry["dataset_path"])
         if not dataset_path.exists():
             raise SystemExit(
                 f"[ERROR] dataset_path does not exist for partition '{partition_name}' "

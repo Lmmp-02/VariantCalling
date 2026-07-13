@@ -7,6 +7,7 @@ Resolve a training split config into a normalized, ready-to-consume JSON manifes
 Supported split strategies:
 - scope_partition
 - locus_bins
+- chrom_locus_bins
 
 Typical usage:
     python training/scripts/preprocess/resolve_split.py \
@@ -21,10 +22,12 @@ Notes:
 - For locus_bins, the resolver loads the historical split_bins.json and exposes:
     - train_bins / val_bins / test_bins at top level
     - a normalized resolved_partitions structure
+- For chrom_locus_bins, bins are keyed by chromosome so the same numeric bin
+  on chr20 and chr21 is treated as a different genomic block.
 - Dataset path derivation is intentionally lightweight and convention-based.
 - Multimodal dataset condition is controlled by dataset_selector:
-    - join_policy: e.g. singleton_locus, candidate_key
-    - dataset_subdir: e.g. outer, candidate_key
+    - join_policy: e.g. singleton_locus, variant_key
+    - dataset_subdir: e.g. outer, variant_key
 """
 
 from __future__ import annotations
@@ -103,6 +106,16 @@ def resolve_path(path_str: str, *, split_config_path: Path, repo_root: Path) -> 
     # Return repo-root-relative fallback even if it does not exist,
     # so the caller can still inspect the intended location.
     return cand2
+
+
+def repo_relative_path(path: Path, repo_root: Path) -> str:
+    """Return a portable repo-relative path when possible, else an absolute path."""
+    path = path.resolve()
+    repo_root = repo_root.resolve()
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
 
 
 def get_dataset_selector(payload: Dict[str, Any]) -> Dict[str, str]:
@@ -459,6 +472,226 @@ def resolve_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
     }
 
 
+def _normalize_bins_by_chrom(raw: Any, *, ctx: str) -> Dict[str, List[int]]:
+    if not isinstance(raw, dict):
+        raise SystemExit(f"[ERROR] {ctx} must be an object mapping chromosome -> list[int].")
+
+    out: Dict[str, List[int]] = {}
+    for chrom, bins in raw.items():
+        if not isinstance(chrom, str) or not chrom:
+            raise SystemExit(f"[ERROR] Invalid chromosome key in {ctx}: {chrom!r}")
+        if not isinstance(bins, list):
+            raise SystemExit(f"[ERROR] {ctx}.{chrom} must be a list[int].")
+        try:
+            out[chrom] = sorted(set(int(x) for x in bins))
+        except (TypeError, ValueError) as e:
+            raise SystemExit(f"[ERROR] Invalid bin value in {ctx}.{chrom}: {e}")
+    return out
+
+
+def _flatten_chrom_bins(bins_by_chrom: Dict[str, List[int]]) -> set[Tuple[str, int]]:
+    return {
+        (chrom, int(bin_id))
+        for chrom, bins in bins_by_chrom.items()
+        for bin_id in bins
+    }
+
+
+def resolve_chrom_locus_bins(ctx: ResolveContext) -> Dict[str, Any]:
+    """Resolve chromosome-aware genomic bins for one multimodal dataset."""
+    payload = ctx.split_payload
+    ensure_keys(
+        payload,
+        ["split_id", "split_strategy", "source_type", "dataset", "bin_source", "partitions"],
+        ctx="chrom_locus_bins split config",
+    )
+    ensure_partition_names(payload["partitions"], ctx="chrom_locus_bins.partitions")
+
+    source_type = str(payload["source_type"])
+    if source_type != "multimodal":
+        raise SystemExit(
+            "[ERROR] chrom_locus_bins currently only supports source_type='multimodal'. "
+            f"Got: {source_type}"
+        )
+
+    dataset_selector = get_dataset_selector(payload)
+    join_policy = dataset_selector["join_policy"]
+    dataset_subdir = dataset_selector["dataset_subdir"]
+
+    dataset = payload["dataset"]
+    ensure_keys(
+        dataset,
+        ["dataset_id", "subject", "chroms", "coverage"],
+        ctx="chrom_locus_bins.dataset",
+    )
+
+    dataset_id = str(dataset["dataset_id"])
+    subject = str(dataset["subject"])
+    coverage = str(dataset["coverage"])
+    chroms = dataset["chroms"]
+    if not isinstance(chroms, list) or not chroms or not all(isinstance(c, str) for c in chroms):
+        raise SystemExit("[ERROR] chrom_locus_bins.dataset.chroms must be a non-empty list[str].")
+
+    dataset_path, dataset_exists = maybe_dataset_path_multimodal(
+        ctx.repo_root,
+        dataset_id,
+        dataset_subdir=dataset_subdir,
+    )
+    dataset_path_stored = repo_relative_path(dataset_path, ctx.repo_root)
+
+    bin_source = payload["bin_source"]
+    ensure_keys(bin_source, ["format", "path"], ctx="chrom_locus_bins.bin_source")
+    fmt = str(bin_source["format"]).lower()
+    if fmt != "json":
+        raise SystemExit(f"[ERROR] Unsupported chrom_locus_bins bin_source format: {fmt}")
+
+    bin_path = resolve_path(
+        str(bin_source["path"]),
+        split_config_path=ctx.split_config_path,
+        repo_root=ctx.repo_root,
+    )
+    if not bin_path.exists():
+        raise SystemExit(f"[ERROR] chrom_locus_bins bin_source not found: {bin_path}")
+    bin_path_stored = repo_relative_path(bin_path, ctx.repo_root)
+
+    source = load_json(bin_path)
+    ensure_keys(
+        source,
+        ["bin_size", "train_bins_by_chrom", "val_bins_by_chrom", "test_bins_by_chrom"],
+        ctx=f"chrom-aware bin_source payload ({bin_path})",
+    )
+
+    bin_size = int(source["bin_size"])
+    if bin_size <= 0:
+        raise SystemExit("[ERROR] chrom_locus_bins bin_size must be positive.")
+
+    train_bins = _normalize_bins_by_chrom(
+        source["train_bins_by_chrom"], ctx="train_bins_by_chrom"
+    )
+    val_bins = _normalize_bins_by_chrom(
+        source["val_bins_by_chrom"], ctx="val_bins_by_chrom"
+    )
+    test_bins = _normalize_bins_by_chrom(
+        source["test_bins_by_chrom"], ctx="test_bins_by_chrom"
+    )
+    dropped_bins = _normalize_bins_by_chrom(
+        source.get("dropped_bins_by_chrom", {}), ctx="dropped_bins_by_chrom"
+    )
+
+    declared_chroms = set(chroms)
+    used_chroms = set(train_bins) | set(val_bins) | set(test_bins) | set(dropped_bins)
+    unknown_chroms = used_chroms - declared_chroms
+    if unknown_chroms:
+        raise SystemExit(
+            "[ERROR] Bin source contains chromosomes not declared in dataset.chroms: "
+            f"{sorted(unknown_chroms)}"
+        )
+
+    train_set = _flatten_chrom_bins(train_bins)
+    val_set = _flatten_chrom_bins(val_bins)
+    test_set = _flatten_chrom_bins(test_bins)
+    overlaps = {
+        "train/val": sorted(train_set & val_set),
+        "train/test": sorted(train_set & test_set),
+        "val/test": sorted(val_set & test_set),
+    }
+    bad_overlaps = {k: v for k, v in overlaps.items() if v}
+    if bad_overlaps:
+        raise SystemExit(f"[ERROR] chrom_locus_bins partitions overlap: {bad_overlaps}")
+
+    alias_map = {
+        "train": train_bins,
+        "val": val_bins,
+        "test": test_bins,
+    }
+    resolved_parts: Dict[str, List[Dict[str, Any]]] = {"train": [], "val": [], "test": []}
+
+    for partition_name in ("train", "val", "test"):
+        aliases = payload["partitions"][partition_name]
+        if not isinstance(aliases, list) or not aliases:
+            raise SystemExit(
+                f"[ERROR] chrom_locus_bins partition '{partition_name}' must be a non-empty list[str]."
+            )
+
+        selected: Dict[str, set[int]] = {}
+        for alias in aliases:
+            if alias not in alias_map:
+                raise SystemExit(
+                    f"[ERROR] Unknown bin alias '{alias}' in partition '{partition_name}'. "
+                    "Allowed: train, val, test"
+                )
+            for chrom, bins in alias_map[alias].items():
+                selected.setdefault(chrom, set()).update(int(x) for x in bins)
+
+        selected_bins_by_chrom = {
+            chrom: sorted(bins)
+            for chrom, bins in sorted(selected.items())
+            if bins
+        }
+        if not selected_bins_by_chrom:
+            raise SystemExit(
+                f"[ERROR] chrom_locus_bins partition '{partition_name}' resolves to zero bins."
+            )
+
+        resolved_parts[partition_name].append(
+            {
+                "partition": partition_name,
+                "dataset_id": dataset_id,
+                "dataset_path": dataset_path_stored,
+                "dataset_path_exists": dataset_exists,
+                "join_policy": join_policy,
+                "dataset_subdir": dataset_subdir,
+                "subject": subject,
+                "chroms": chroms,
+                "coverage": coverage,
+                "selection": {
+                    "type": "chrom_locus_bins",
+                    "bin_source_path": bin_path_stored,
+                    "bin_size": bin_size,
+                    "bins_by_chrom": selected_bins_by_chrom,
+                },
+            }
+        )
+
+    count_bins = lambda x: sum(len(v) for v in x.values())
+    return {
+        "split_id": payload["split_id"],
+        "split_strategy": payload["split_strategy"],
+        "source_type": payload["source_type"],
+        "description": payload.get("description", ""),
+        "dataset_selector": dataset_selector,
+        "dataset_policy": payload.get("dataset_policy", {}),
+        "resolved_at": utc_now_iso(),
+        "repo_root": str(ctx.repo_root),
+        "path_mode": "repo_relative",
+        "split_config_path": str(ctx.split_config_path.resolve()),
+        "dataset": {
+            "dataset_id": dataset_id,
+            "dataset_path": dataset_path_stored,
+            "dataset_path_exists": dataset_exists,
+            "join_policy": join_policy,
+            "dataset_subdir": dataset_subdir,
+            "subject": subject,
+            "chroms": chroms,
+            "coverage": coverage,
+        },
+        "bin_source": {"format": fmt, "path": bin_path_stored},
+        "bin_size": bin_size,
+        "buffer_bins": source.get("buffer_bins"),
+        "train_bins_by_chrom": train_bins,
+        "val_bins_by_chrom": val_bins,
+        "test_bins_by_chrom": test_bins,
+        "dropped_bins_by_chrom": dropped_bins,
+        "resolved_partitions": resolved_parts,
+        "summary": {
+            "n_train_bins": count_bins(train_bins),
+            "n_val_bins": count_bins(val_bins),
+            "n_test_bins": count_bins(test_bins),
+            "n_dropped_bins": count_bins(dropped_bins),
+        },
+    }
+
+
 # ---------------------------------------------------------------------
 # Console summary
 # ---------------------------------------------------------------------
@@ -532,6 +765,45 @@ def print_locus_bins_summary(resolved: Dict[str, Any]) -> None:
     print(f"  dropped bins   : {len(resolved.get('dropped_bins', []))}")
 
 
+def print_chrom_locus_bins_summary(resolved: Dict[str, Any]) -> None:
+    print("\n[ResolvedSplit]")
+    print(f"  split_id       : {resolved['split_id']}")
+    print(f"  strategy       : {resolved['split_strategy']}")
+    print(f"  source_type    : {resolved['source_type']}")
+    print(f"  config         : {resolved['split_config_path']}")
+    print(f"  resolved_at    : {resolved['resolved_at']}")
+
+    print_dataset_selector_summary(resolved)
+
+    ds = resolved["dataset"]
+    exists = "yes" if ds["dataset_path_exists"] else "no"
+    print("\n[Dataset]")
+    print(f"  dataset_id     : {ds['dataset_id']}")
+    print(f"  subject        : {ds['subject']}")
+    print(f"  chroms         : {ds['chroms']}")
+    print(f"  coverage       : {ds.get('coverage')}")
+    print(f"  join_policy    : {ds.get('join_policy')}")
+    print(f"  dataset_subdir : {ds.get('dataset_subdir')}")
+    print(f"  path_exists    : {exists}")
+
+    print("\n[BinSource]")
+    print(f"  path           : {resolved['bin_source']['path']}")
+    print(f"  bin_size       : {resolved.get('bin_size')}")
+    print(f"  buffer_bins    : {resolved.get('buffer_bins')}")
+
+    print("\n[Partitions]")
+    for name, key in (
+        ("train", "train_bins_by_chrom"),
+        ("val", "val_bins_by_chrom"),
+        ("test", "test_bins_by_chrom"),
+        ("dropped", "dropped_bins_by_chrom"),
+    ):
+        bins_by_chrom = resolved.get(key, {})
+        total = sum(len(v) for v in bins_by_chrom.values())
+        counts = {chrom: len(bins) for chrom, bins in bins_by_chrom.items()}
+        print(f"  {name:8s}: {total:3d} bins {counts}")
+
+
 # ---------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------
@@ -583,10 +855,13 @@ def main() -> None:
     elif strategy == "locus_bins":
         resolved = resolve_locus_bins(ctx)
         printer = print_locus_bins_summary
+    elif strategy == "chrom_locus_bins":
+        resolved = resolve_chrom_locus_bins(ctx)
+        printer = print_chrom_locus_bins_summary
     else:
         raise SystemExit(
             f"[ERROR] Unsupported split_strategy: {strategy}. "
-            f"Allowed: scope_partition, locus_bins"
+            f"Allowed: scope_partition, locus_bins, chrom_locus_bins"
         )
 
     if args.output_json:

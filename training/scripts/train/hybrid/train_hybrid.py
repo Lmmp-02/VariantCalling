@@ -388,6 +388,15 @@ def main():
     exp = load_json(experiment_config_path)
     rs = load_resolved_split(resolved_split_path)
 
+    expected_split_id = exp.get("split_id")
+    resolved_split_id = rs.get("split_id")
+    if expected_split_id is not None and str(expected_split_id) != str(resolved_split_id):
+        raise SystemExit(
+            "[ERROR] Experiment config and resolved split do not match: "
+            f"experiment split_id={expected_split_id!r}, "
+            f"resolved split_id={resolved_split_id!r}."
+        )
+
     experiment_id = str(exp.get("experiment_id", "hybrid_experiment"))
     hyper = exp.get("hyperparams", {})
     selection = exp.get("selection", {})
@@ -522,7 +531,7 @@ def main():
             "label_source": "dataset.label",
             "variant_type_source": "dataset.variant_type",
             "keep_vt_mismatch": True,
-            "join_definition": "locus-level late merge",
+            **exp.get("dataset_policy", {}),
         },
         "model_policy": {
             "model_family": model_family,
