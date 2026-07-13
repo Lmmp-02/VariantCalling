@@ -1,0 +1,41 @@
+{
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "split_id": "hg003_chr20_chr21_mini_ablation__singleton_locus",
+  "split_strategy": "chrom_locus_bins",
+  "source_type": "multimodal",
+  "description": "Controlled HG003 chr20+chr21 40x join ablation using the canonical singleton-locus OUTER dataset and chromosome-aware 1 Mb bins.",
+  "dataset_policy": {
+    "purpose": "join_ablation",
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "singleton_locus",
+    "physical_subdir": "outer",
+    "split_rule": "fixed chromosome-aware 1 Mb bins shared unchanged with the variant_key condition"
+  },
+  "dataset": {
+    "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+    "subject": "HG003",
+    "chroms": [
+      "chr20",
+      "chr21"
+    ],
+    "coverage": "40x"
+  },
+  "bin_source": {
+    "format": "json",
+    "path": "bin_sources/hg003_chr20_chr21_mini_ablation_bins.json"
+  },
+  "partitions": {
+    "train": [
+      "train"
+    ],
+    "val": [
+      "val"
+    ],
+    "test": [
+      "test"
+    ]
+  }
+}

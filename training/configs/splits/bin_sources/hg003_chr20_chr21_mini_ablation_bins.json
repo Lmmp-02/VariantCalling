@@ -1,0 +1,27 @@
+{
+  "description": "Chromosome-aware 1 Mb split for a small controlled HG003 chr20+chr21 join ablation. Approximately 80/10/10 of retained bins, with one-bin buffers between held-out blocks and train blocks.",
+  "bin_size": 1000000,
+  "buffer_bins": 1,
+  "seed": 0,
+  "train_bins_by_chrom": {
+    "chr20": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 64],
+    "chr21": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 45, 46]
+  },
+  "val_bins_by_chrom": {
+    "chr20": [24, 25, 26, 31, 32, 33],
+    "chr21": [16, 17, 18, 19]
+  },
+  "test_bins_by_chrom": {
+    "chr20": [57, 58, 59, 60, 61, 62],
+    "chr21": [40, 41, 42, 43]
+  },
+  "dropped_bins_by_chrom": {
+    "chr20": [23, 34, 56, 63],
+    "chr21": [15, 20, 39, 44]
+  },
+  "notes": [
+    "chr20 preserves the historical HG003 split used by the legacy experiments.",
+    "chr21 adds an analogous disjoint split so all three partitions contain both chromosomes.",
+    "The same bin source must be reused unchanged across every join policy in the ablation."
+  ]
+}

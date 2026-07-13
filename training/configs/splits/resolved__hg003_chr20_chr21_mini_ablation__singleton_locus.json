@@ -1,0 +1,361 @@
+{
+  "split_id": "hg003_chr20_chr21_mini_ablation__singleton_locus",
+  "split_strategy": "chrom_locus_bins",
+  "source_type": "multimodal",
+  "description": "Controlled HG003 chr20+chr21 40x join ablation using the canonical singleton-locus OUTER dataset and chromosome-aware 1 Mb bins.",
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
+  "dataset_policy": {
+    "purpose": "join_ablation",
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "singleton_locus",
+    "physical_subdir": "outer",
+    "split_rule": "fixed chromosome-aware 1 Mb bins shared unchanged with the variant_key condition"
+  },
+  "resolved_at": "2026-07-13T07:35:54+00:00",
+  "repo_root": "/home/lantik-deploy/jlazaro/projects/variantcalling",
+  "path_mode": "repo_relative",
+  "split_config_path": "/home/lantik-deploy/jlazaro/projects/variantcalling/training/configs/splits/hg003_chr20_chr21_mini_ablation__singleton_locus.json",
+  "dataset": {
+    "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+    "dataset_path": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+    "dataset_path_exists": true,
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer",
+    "subject": "HG003",
+    "chroms": [
+      "chr20",
+      "chr21"
+    ],
+    "coverage": "40x"
+  },
+  "bin_source": {
+    "format": "json",
+    "path": "training/configs/splits/bin_sources/hg003_chr20_chr21_mini_ablation_bins.json"
+  },
+  "bin_size": 1000000,
+  "buffer_bins": 1,
+  "train_bins_by_chrom": {
+    "chr20": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      64
+    ],
+    "chr21": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      45,
+      46
+    ]
+  },
+  "val_bins_by_chrom": {
+    "chr20": [
+      24,
+      25,
+      26,
+      31,
+      32,
+      33
+    ],
+    "chr21": [
+      16,
+      17,
+      18,
+      19
+    ]
+  },
+  "test_bins_by_chrom": {
+    "chr20": [
+      57,
+      58,
+      59,
+      60,
+      61,
+      62
+    ],
+    "chr21": [
+      40,
+      41,
+      42,
+      43
+    ]
+  },
+  "dropped_bins_by_chrom": {
+    "chr20": [
+      23,
+      34,
+      56,
+      63
+    ],
+    "chr21": [
+      15,
+      20,
+      39,
+      44
+    ]
+  },
+  "resolved_partitions": {
+    "train": [
+      {
+        "partition": "train",
+        "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+        "dataset_path": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG003",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "chrom_locus_bins",
+          "bin_source_path": "training/configs/splits/bin_sources/hg003_chr20_chr21_mini_ablation_bins.json",
+          "bin_size": 1000000,
+          "bins_by_chrom": {
+            "chr20": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              64
+            ],
+            "chr21": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              45,
+              46
+            ]
+          }
+        }
+      }
+    ],
+    "val": [
+      {
+        "partition": "val",
+        "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+        "dataset_path": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG003",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "chrom_locus_bins",
+          "bin_source_path": "training/configs/splits/bin_sources/hg003_chr20_chr21_mini_ablation_bins.json",
+          "bin_size": 1000000,
+          "bins_by_chrom": {
+            "chr20": [
+              24,
+              25,
+              26,
+              31,
+              32,
+              33
+            ],
+            "chr21": [
+              16,
+              17,
+              18,
+              19
+            ]
+          }
+        }
+      }
+    ],
+    "test": [
+      {
+        "partition": "test",
+        "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+        "dataset_path": "data/4_out/datasets/multimodal/by_subject/hg003_chr20_chr21_harmonized_40x/outer",
+        "dataset_path_exists": true,
+        "join_policy": "singleton_locus",
+        "dataset_subdir": "outer",
+        "subject": "HG003",
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
+        "coverage": "40x",
+        "selection": {
+          "type": "chrom_locus_bins",
+          "bin_source_path": "training/configs/splits/bin_sources/hg003_chr20_chr21_mini_ablation_bins.json",
+          "bin_size": 1000000,
+          "bins_by_chrom": {
+            "chr20": [
+              57,
+              58,
+              59,
+              60,
+              61,
+              62
+            ],
+            "chr21": [
+              40,
+              41,
+              42,
+              43
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "summary": {
+    "n_train_bins": 80,
+    "n_val_bins": 10,
+    "n_test_bins": 10,
+    "n_dropped_bins": 8
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "experiment_id": "hybrid_groupwise_hg003_join_mini_ablation__singleton_locus",
+  "model_family": "hybrid_groupwise_3c",
+  "source_type": "multimodal",
+  "train_script": "training/scripts/train/hybrid/train_hybrid.py",
+  "split_id": "hg003_chr20_chr21_mini_ablation__singleton_locus",
+  "seed": 0,
+  "hyperparams": {
+    "epochs": 10,
+    "batch_size": 2048,
+    "lr": 0.0003,
+    "weight_decay": 0.0005,
+    "arch": "mlp",
+    "hidden": 512,
+    "dropout": 0.1,
+    "add_masks": true,
+    "use_class_weights": false,
+    "max_class_weight": 10.0
+  },
+  "selection": {
+    "save_best_on": "val_macro_f1"
+  },
+  "dataset_policy": {
+    "mode": "hybrid",
+    "groups_keep": [
+      1,
+      10,
+      11
+    ],
+    "target": "label",
+    "label_source": "dataset.label",
+    "variant_type_source": "dataset.variant_type",
+    "keep_vt_mismatch": true,
+    "join_policy": "singleton_locus",
+    "join_definition": "canonical OUTER join restricted to singleton loci",
+    "candidate_universe": "restricted_singleton_locus",
+    "ablation_rule": "Keep model family, seed, hyperparameters and chromosome-aware genomic bins fixed across both join conditions."
+  },
+  "outputs": {
+    "root_dir": "training/out/experiments"
+  },
+  "notes": "HG003 chr20+chr21 40x Hybrid Groupwise 3C join ablation: singleton_locus condition."
+}

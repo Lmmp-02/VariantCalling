@@ -1,0 +1,41 @@
+{
+  "dataset_selector": {
+    "join_policy": "variant_key",
+    "dataset_subdir": "variant_key"
+  },
+  "split_id": "hg003_chr20_chr21_mini_ablation__variant_key",
+  "split_strategy": "chrom_locus_bins",
+  "source_type": "multimodal",
+  "description": "Controlled HG003 chr20+chr21 40x join ablation using Luisa's variant-key multimodal dataset and the exact same chromosome-aware 1 Mb bins as the baseline.",
+  "dataset_policy": {
+    "purpose": "join_ablation",
+    "candidate_universe": "variant_key_join",
+    "unit_of_fusion": "variant_key",
+    "physical_subdir": "variant_key",
+    "split_rule": "fixed chromosome-aware 1 Mb bins shared unchanged with the singleton_locus condition"
+  },
+  "dataset": {
+    "dataset_id": "hg003_chr20_chr21_harmonized_40x",
+    "subject": "HG003",
+    "chroms": [
+      "chr20",
+      "chr21"
+    ],
+    "coverage": "40x"
+  },
+  "bin_source": {
+    "format": "json",
+    "path": "bin_sources/hg003_chr20_chr21_mini_ablation_bins.json"
+  },
+  "partitions": {
+    "train": [
+      "train"
+    ],
+    "val": [
+      "val"
+    ],
+    "test": [
+      "test"
+    ]
+  }
+}
