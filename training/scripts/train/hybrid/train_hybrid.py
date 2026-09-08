@@ -49,6 +49,13 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from training.metrics import cm_3, metrics_from_cm_3
+from training.models import (
+    GroupwiseLinear3C,
+    GroupwiseMLP3C,
+    LinearHead,
+    MLP,
+)
 from training.scripts.train.shared_data import (  # noqa: E402
     build_partition_index_hybrid,
     load_hybrid_shard_features,
@@ -61,83 +68,6 @@ from training.scripts.train.shared_data import (  # noqa: E402
 # ---------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------
-
-class LinearHead(nn.Module):
-    def __init__(self, in_dim: int, n_classes: int):
-        super().__init__()
-        self.fc = nn.Linear(in_dim, n_classes)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc(x)
-
-
-class MLP(nn.Module):
-    def __init__(self, in_dim: int, n_classes: int, hidden: int, dropout: float):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(in_dim, hidden),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden, hidden),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden, n_classes),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.net(x)
-
-
-class GroupwiseLinear3C(nn.Module):
-    def __init__(self, in_dim: int, n_classes: int = 3):
-        super().__init__()
-        self.trunk = nn.Identity()
-        self.heads = nn.ModuleDict({
-            "1": nn.Linear(in_dim, n_classes),
-            "10": nn.Linear(in_dim, n_classes),
-            "11": nn.Linear(in_dim, n_classes),
-        })
-
-    def forward(self, x: torch.Tensor, groups: torch.Tensor) -> torch.Tensor:
-        h = self.trunk(x)
-        out = torch.zeros((h.shape[0], 3), dtype=h.dtype, device=h.device)
-
-        for g in (1, 10, 11):
-            mask = (groups == g)
-            if mask.any():
-                out[mask] = self.heads[str(g)](h[mask])
-
-        return out
-
-
-class GroupwiseMLP3C(nn.Module):
-    def __init__(self, in_dim: int, n_classes: int = 3, hidden: int = 512, dropout: float = 0.1):
-        super().__init__()
-        self.trunk = nn.Sequential(
-            nn.Linear(in_dim, hidden),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(hidden, hidden),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-        )
-        self.heads = nn.ModuleDict({
-            "1": nn.Linear(hidden, n_classes),
-            "10": nn.Linear(hidden, n_classes),
-            "11": nn.Linear(hidden, n_classes),
-        })
-
-    def forward(self, x: torch.Tensor, groups: torch.Tensor) -> torch.Tensor:
-        h = self.trunk(x)
-        out = torch.zeros((h.shape[0], 3), dtype=h.dtype, device=h.device)
-
-        for g in (1, 10, 11):
-            mask = (groups == g)
-            if mask.any():
-                out[mask] = self.heads[str(g)](h[mask])
-
-        return out
-
 
 def build_model(
     model_family: str,
@@ -163,63 +93,6 @@ def build_model(
 # ---------------------------------------------------------------------
 # Metrics
 # ---------------------------------------------------------------------
-
-def cm_3(y_true: List[int], y_pred: List[int], n_classes: int = 3) -> np.ndarray:
-    cm = np.zeros((n_classes, n_classes), dtype=np.int64)
-    for t, p in zip(y_true, y_pred):
-        cm[int(t), int(p)] += 1
-    return cm
-
-
-def metrics_from_cm_3(cm: np.ndarray) -> Dict[str, Any]:
-    eps = 1e-12
-    n_classes = cm.shape[0]
-    total = int(cm.sum())
-    acc = float(np.trace(cm) / max(total, 1))
-
-    per_class = {}
-    f1s = []
-    recs = []
-    precs = []
-    supports = []
-
-    for c in range(n_classes):
-        tp = float(cm[c, c])
-        fp = float(cm[:, c].sum() - cm[c, c])
-        fn = float(cm[c, :].sum() - cm[c, c])
-        support = float(cm[c, :].sum())
-
-        prec = float(tp / (tp + fp + eps))
-        rec = float(tp / (tp + fn + eps))
-        f1 = float(2 * prec * rec / (prec + rec + eps))
-
-        per_class[str(c)] = {
-            "precision": prec,
-            "recall": rec,
-            "f1": f1,
-            "support": int(support),
-        }
-
-        f1s.append(f1)
-        recs.append(rec)
-        precs.append(prec)
-        supports.append(support)
-
-    macro_f1 = float(np.mean(f1s))
-    macro_recall = float(np.mean(recs))
-    macro_precision = float(np.mean(precs))
-    wsum = float(np.sum(supports)) + eps
-    weighted_f1 = float(np.sum([f1s[i] * supports[i] for i in range(n_classes)]) / wsum)
-
-    return {
-        "acc": acc,
-        "macro_f1": macro_f1,
-        "macro_recall": macro_recall,
-        "macro_precision": macro_precision,
-        "weighted_f1": weighted_f1,
-        "per_class": per_class,
-    }
-
 
 def variant_recall_from_cm3(cm3: List[List[int]]) -> float:
     cm = np.array(cm3, dtype=np.int64)
