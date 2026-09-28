@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MANIFEST_PATH="${1:-data/5_scripts/config/downsample_multimodal_benchmark.tsv}"
+MANIFEST_PATH="${1:-scripts/data/config/downsample_multimodal_benchmark.tsv}"
 THREADS="${THREADS:-8}"
 CONDA_ENV="${CONDA_ENV:-hts}"
 DRY_RUN="${DRY_RUN:-0}"

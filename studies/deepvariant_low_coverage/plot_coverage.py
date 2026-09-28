@@ -7,10 +7,10 @@ summary TSVs, and save one coverage plot per BAM if matplotlib is available.
 Examples:
     conda activate hts
     cd ~/VariantCalling
-    python data/5_scripts/plot_coverage_v2.py
+    python studies/deepvariant_low_coverage/plot_coverage.py
 
 Optional environment variables:
-    THREADS=8 WIN=10000 SMOOTH=10 FORCE=0 python data/5_scripts/plot_coverage_v2.py
+    THREADS=8 WIN=10000 SMOOTH=10 FORCE=0 python studies/deepvariant_low_coverage/plot_coverage.py
 """
 
 from __future__ import annotations

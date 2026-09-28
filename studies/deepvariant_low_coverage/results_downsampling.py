@@ -9,8 +9,8 @@ Expected input structure:
 Where run_tag follows the pattern: cov{N}x_s{seed} or covorig_sorig
 
 Usage (from project root):
-    python data/5_scripts/plot_results.py
-    python data/5_scripts/plot_results.py --sample HG003 --region chr20
+    python studies/deepvariant_low_coverage/results_downsampling.py
+    python studies/deepvariant_low_coverage/results_downsampling.py --sample HG003 --region chr20
 """
 
 import argparse
@@ -28,7 +28,7 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 
 HAPPY_BASE = Path("data/4_out/happy")
-PLOT_DIR   = Path("data/4_out/plots")
+PLOT_DIR = Path("studies/deepvariant_low_coverage/results")
 
 TECH_LABELS = {
     "Illumina":              "Illumina",

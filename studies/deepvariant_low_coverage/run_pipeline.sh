@@ -10,7 +10,8 @@ set -euo pipefail
 #   Seed   : 42 (for downsampled; "orig" for originals)
 #
 # Usage:
-#   bash run_pipeline.sh
+#   bash studies/deepvariant_low_coverage/run_pipeline.sh
+#   bash studies/deepvariant_low_coverage/run_pipeline.sh --dry-run
 #
 # Requirements: run_deepvariant.sh and run_happy.sh must be in the same directory
 # =============================================================================
@@ -22,10 +23,13 @@ SEED=42
 TECHS=(Illumina ONT)
 COVS=(orig 30 15 10 5)
 
-# Absolute paths derived from the project root (where this script lives)
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DV_SCRIPT="${PROJECT_ROOT}/data/5_scripts/run_deepvariant.sh"
-HAPPY_SCRIPT="${PROJECT_ROOT}/data/5_scripts/run_happy.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+DV_SCRIPT="${SCRIPT_DIR}/run_deepvariant.sh"
+HAPPY_SCRIPT="${SCRIPT_DIR}/run_happy.sh"
+
+cd "$PROJECT_ROOT"
 
 DRY_RUN=false
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true

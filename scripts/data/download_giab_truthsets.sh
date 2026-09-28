@@ -8,10 +8,10 @@ IFS=$'\n\t'
 # Run from repo root.
 #
 # Examples:
-#   bash data/5_scripts/download_giab_truthsets.sh
-#   bash data/5_scripts/download_giab_truthsets.sh --samples HG002,HG005
-#   bash data/5_scripts/download_giab_truthsets.sh --samples HG005,HG006,HG007
-#   bash data/5_scripts/download_giab_truthsets.sh --force 1
+#   bash scripts/data/download_giab_truthsets.sh
+#   bash scripts/data/download_giab_truthsets.sh --samples HG002,HG005
+#   bash scripts/data/download_giab_truthsets.sh --samples HG005,HG006,HG007
+#   bash scripts/data/download_giab_truthsets.sh --force 1
 #
 # Outputs per sample:
 #   data/3_truth/<SAMPLE>/
