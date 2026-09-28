@@ -142,6 +142,12 @@
 /training/out/**/wandb/
 /training/out/**/lightning_logs/
 
+# Generated training configuration
+/training/configs/**/resolved__*.json
+
+# Generated training/runtime outputs
+/training/out/
+
 
 # =============================================================================
 # Editor / OS noise
