@@ -10,7 +10,7 @@ Memory-safe version:
 - loads embeddings shard-by-shard only when requested by trainers
 
 Designed for canonical multimodal NPZ datasets produced by:
-    data/5_scripts/hybrid_dv/build_join_datasets.py
+    scripts/multimodal/build_join_datasets_singleton_locus.py
 """
 
 from __future__ import annotations
