@@ -1,3 +1,0 @@
-chrom	length	bases	mean	min	max
-chr20	64444167	323674334	5.02	0	269
-total	64444167	323674334	5.02	0	269
