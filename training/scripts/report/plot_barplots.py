@@ -33,23 +33,17 @@ class DatasetSpec:
 
 
 DATASETS = {
-    "HG003": DatasetSpec(
-        key="HG003",
-        title_es="HG003 chr20",
-        title_en="HG003 chr20",
-        csv_relpath="HG003_ch20_initial_test/hg003_summary_internal_test_long.csv",
-    ),
     "HG004": DatasetSpec(
         key="HG004",
         title_es="HG004 chr20",
         title_en="HG004 chr20",
-        csv_relpath="HG004_chr20/summary_internal_test_long.csv",
+        csv_relpath="hg004_internal_40x.csv",
     ),
     "HG005": DatasetSpec(
         key="HG005",
         title_es="HG005 chr20+chr21, 40x",
         title_en="HG005 chr20+chr21, 40x",
-        csv_relpath="HG005_chr20_chr21_40x/summary_hg005_trainmode_40x_long.csv",
+        csv_relpath="hg005_40x.csv",
     ),
 }
 
@@ -58,25 +52,25 @@ HG005_COVERAGE_DATASETS = {
         key="HG005_5x",
         title_es="HG005 chr20+chr21, 5x",
         title_en="HG005 chr20+chr21, 5x",
-        csv_relpath="HG005_chr20_chr21_5x/summary_hg005_trainmode_5x_long.csv",
+        csv_relpath="hg005_5x.csv",
     ),
     "10x": DatasetSpec(
         key="HG005_10x",
         title_es="HG005 chr20+chr21, 10x",
         title_en="HG005 chr20+chr21, 10x",
-        csv_relpath="HG005_chr20_chr21_10x/summary_hg005_trainmode_10x_long.csv",
+        csv_relpath="hg005_10x.csv",
     ),
     "20x": DatasetSpec(
         key="HG005_20x",
         title_es="HG005 chr20+chr21, 20x",
         title_en="HG005 chr20+chr21, 20x",
-        csv_relpath="HG005_chr20_chr21_20x/summary_hg005_trainmode_20x_long.csv",
+        csv_relpath="hg005_20x.csv",
     ),
     "40x": DatasetSpec(
         key="HG005_40x",
         title_es="HG005 chr20+chr21, 40x",
         title_en="HG005 chr20+chr21, 40x",
-        csv_relpath="HG005_chr20_chr21_40x/summary_hg005_trainmode_40x_long.csv",
+        csv_relpath="hg005_40x.csv",
     ),
 }
 
@@ -108,7 +102,6 @@ TEXT = {
         "scatter_ylabel": "Precisión",
         "coverage_overview": "Evolución por cobertura (macro F1)",
         "coverage_variant": "Cobertura por tipo de variante (F1)",
-        "two_stage": "HG003 chr20 - ablación one-stage vs two-stage",
         "variant_fp_fn": "FP/FN de variantes",
         "snp_indel": "SNP/INDEL",
     },
@@ -134,7 +127,6 @@ TEXT = {
         "scatter_ylabel": "Precision",
         "coverage_overview": "Coverage trend (macro F1)",
         "coverage_variant": "Coverage by variant type (F1)",
-        "two_stage": "HG003 chr20 - one-stage vs two-stage ablation",
         "variant_fp_fn": "Variant FP/FN",
         "snp_indel": "SNP/INDEL",
     },
@@ -853,141 +845,6 @@ def make_variant_view_figures(
     return outputs
 
 
-def make_two_stage_figure(
-    data_root: Path,
-    out_dir: Path,
-    *,
-    language: str,
-    save_svg: bool,
-) -> pd.DataFrame:
-    csv_path = data_root / "HG003_ch20_initial_test" / "hg003_two_stage_hybrid_ablation.csv"
-    if not csv_path.exists():
-        print(f"[AVISO] No existe el CSV de ablación two-stage: {csv_path}")
-        return pd.DataFrame()
-
-    df = clean_numeric(pd.read_csv(csv_path))
-    model_col = "model_label" if "model_label" in df.columns else "architecture"
-    if model_col not in df.columns:
-        print(f"[AVISO] El CSV de ablación no tiene 'model_label' ni 'architecture': {csv_path}")
-        return pd.DataFrame()
-    if "variant_type" in df.columns:
-        df = df[df["variant_type"] == "ALL"].copy()
-
-    family_specs = {
-        "simple": {
-            "title": "Hybrid simple",
-            "models": {
-                "1-stage": "Hybrid simple direct 3c",
-                "2-stage raw": "Hybrid simple 2-stage raw",
-                "2-stage calib.": "Hybrid simple 2-stage 3c calib",
-            },
-        },
-        "groupwise": {
-            "title": "Hybrid groupwise",
-            "models": {
-                "1-stage": "Hybrid groupwise direct 3c",
-                "2-stage raw": "Hybrid groupwise 2-stage raw",
-                "2-stage calib.": "Hybrid groupwise 2-stage 3c calib",
-            },
-        },
-    }
-    stage_colors = {"1-stage": "#5F7FA3", "2-stage raw": "#D7A461", "2-stage calib.": "#7EAE91"}
-
-    keep = [m for spec in family_specs.values() for m in spec["models"].values()]
-    sub = df[df[model_col].isin(keep)].copy()
-    if sub.empty:
-        print("[AVISO] No se encontraron modelos esperados en la ablación two-stage.")
-        return pd.DataFrame()
-
-    rows = sub.drop_duplicates(model_col).set_index(model_col)
-    score_metrics = ["macro_f1", "variant_recall"]
-    count_metrics = ["variant_fp", "variant_fn"]
-    score_values = []
-    count_values = []
-    for model_name in keep:
-        if model_name in rows.index:
-            score_values.extend([float(rows.loc[model_name, m]) for m in score_metrics if m in rows.columns])
-            count_values.extend([float(rows.loc[model_name, m]) for m in count_metrics if m in rows.columns])
-
-    score_axis = score_axis_spec(score_values)
-    max_count = max(finite_values(count_values), default=1.0)
-
-    out_path = out_dir / "fig_6_4_hg003_two_stage_ablation.png"
-    fig, axes = plt.subplots(2, 2, figsize=(13.8, 8.2), sharey="row")
-    fig.suptitle(t(language, "two_stage"), fontsize=14, y=1.03)
-    manifest = []
-
-    for col, family_key in enumerate(["simple", "groupwise"]):
-        spec = family_specs[family_key]
-        stage_to_model = spec["models"]
-        stage_order = [s for s in ["1-stage", "2-stage raw", "2-stage calib."] if stage_to_model[s] in rows.index]
-
-        ax_score = axes[0, col]
-        x_score = np.arange(len(score_metrics))
-        width = 0.23
-        containers = []
-        labels_by_container = []
-        for i, stage in enumerate(stage_order):
-            model_name = stage_to_model[stage]
-            vals = [float(rows.loc[model_name, metric]) if metric in rows.columns else np.nan for metric in score_metrics]
-            offsets = x_score + (i - (len(stage_order) - 1) / 2) * width
-            container = ax_score.bar(
-                offsets,
-                vals,
-                width=width,
-                label=stage,
-                color=stage_colors[stage],
-                edgecolor=EDGE_COLOR,
-                linewidth=0.55,
-            )
-            containers.append(container)
-            labels_by_container.append([f"{v:.4f}" if np.isfinite(v) else "" for v in vals])
-            for metric, value in zip(score_metrics, vals):
-                manifest.append({"figure": out_path.stem, "family": family_key, "stage": stage, "model": model_name, "metric": metric, "value": value})
-        ax_score.set_title(spec["title"])
-        ax_score.set_xticks(x_score)
-        ax_score.set_xticklabels([metric_label(m, language) for m in score_metrics])
-        ax_score.set_ylabel(t(language, "score") if col == 0 else "")
-        apply_score_axis(ax_score, score_axis)
-        add_bar_labels(ax_score, containers, labels_by_container, fontsize=7, rotation=0)
-
-        ax_count = axes[1, col]
-        x_count = np.arange(len(count_metrics))
-        count_containers = []
-        count_labels = []
-        for i, stage in enumerate(stage_order):
-            model_name = stage_to_model[stage]
-            vals = [float(rows.loc[model_name, metric]) if metric in rows.columns else np.nan for metric in count_metrics]
-            offsets = x_count + (i - (len(stage_order) - 1) / 2) * width
-            container = ax_count.bar(
-                offsets,
-                vals,
-                width=width,
-                label=stage,
-                color=stage_colors[stage],
-                edgecolor=EDGE_COLOR,
-                linewidth=0.55,
-            )
-            count_containers.append(container)
-            count_labels.append([f"{int(round(v))}" if np.isfinite(v) else "" for v in vals])
-            for metric, value in zip(count_metrics, vals):
-                manifest.append({"figure": out_path.stem, "family": family_key, "stage": stage, "model": model_name, "metric": metric, "value": value})
-        ax_count.set_title(t(language, "variant_fp_fn"))
-        ax_count.set_xticks(x_count)
-        ax_count.set_xticklabels([metric_label(m, language) for m in count_metrics])
-        ax_count.set_ylabel(t(language, "count") if col == 0 else "")
-        ax_count.set_ylim(0, max_count * 1.18 if max_count > 0 else 1)
-        ax_count.grid(axis="y", linestyle="--", alpha=GRID_ALPHA)
-        add_bar_labels(ax_count, count_containers, count_labels, fontsize=8, rotation=0)
-
-    legend_order = ["1-stage", "2-stage raw", "2-stage calib."]
-    handles = [plt.Rectangle((0, 0), 1, 1, facecolor=stage_colors[s], edgecolor=EDGE_COLOR, linewidth=0.55) for s in legend_order]
-    fig.legend(handles, legend_order, loc="upper center", bbox_to_anchor=(0.5, 0.965), ncol=3, frameon=True)
-    fig.tight_layout(rect=(0, 0, 1, 0.94))
-    savefig(fig, out_path, save_svg=save_svg)
-    return pd.DataFrame(manifest)
-
-
 def make_coverage_overview_figures(
     coverage_dfs: Mapping[str, pd.DataFrame],
     out_dir: Path,
@@ -1203,67 +1060,9 @@ def make_all_figures(
     configure_matplotlib()
     manifest_parts: list[pd.DataFrame] = []
 
-    hg003 = read_summary(data_root, DATASETS["HG003"])
     hg004 = read_summary(data_root, DATASETS["HG004"])
     hg005 = read_summary(data_root, DATASETS["HG005"])
     hg005_coverage = {cov: read_summary(data_root, spec) for cov, spec in HG005_COVERAGE_DATASETS.items()}
-
-    # HG003: baseline vs unimodal heads.
-    if hg003 is not None:
-        manifest_parts.extend(make_standard_view_figures(
-            hg003,
-            dataset_title=DATASETS["HG003"].title(language),
-            names_by_view={
-                "illumina_view": ["dv_illumina", "unimodal_illumina_linear", "unimodal_illumina_mlp"],
-                "ont_view": ["dv_ont", "unimodal_ont_linear", "unimodal_ont_mlp"],
-            },
-            title_es="DV baseline vs cabezas unimodales",
-            title_en="DV baseline vs unimodal heads",
-            out_stem="fig_6_1_hg003_unimodal_vs_dv",
-            out_dir=out_dir,
-            language=language,
-            pct_decimals=pct_decimals,
-            save_svg=save_svg,
-        ))
-
-        # HG003: MLP-only hybrid comparison.
-        manifest_parts.extend(make_standard_view_figures(
-            hg003,
-            dataset_title=DATASETS["HG003"].title(language),
-            names_by_view={
-                "illumina_view": ["dv_illumina", "unimodal_illumina_mlp", "hybrid_simple_mlp", "hybrid_groupwise_mlp"],
-                "ont_view": ["dv_ont", "unimodal_ont_mlp", "hybrid_simple_mlp", "hybrid_groupwise_mlp"],
-            },
-            title_es="modelos MLP unimodales e híbridos",
-            title_en="MLP unimodal and hybrid models",
-            out_stem="fig_6_2_hg003_hybrid_mlp",
-            out_dir=out_dir,
-            language=language,
-            pct_decimals=pct_decimals,
-            save_svg=save_svg,
-        ))
-
-        # HG003: variant type breakdown for hybrid MLPs. No percentage labels by default
-        # because there is no DV baseline in this specific comparison and labels crowd ONT/INDEL.
-        manifest_parts.extend(make_variant_view_figures(
-            hg003,
-            dataset_title=DATASETS["HG003"].title(language),
-            names_by_view={
-                "illumina_view": ["hybrid_simple_mlp", "hybrid_groupwise_mlp"],
-                "ont_view": ["hybrid_simple_mlp", "hybrid_groupwise_mlp"],
-            },
-            title_es="modelos híbridos por tipo de variante",
-            title_en="hybrid models by variant type",
-            out_stem="fig_6_3_hg003_hybrid_snp_indel",
-            out_dir=out_dir,
-            language=language,
-            pct_decimals=pct_decimals,
-            save_svg=save_svg,
-            labels="value",
-            shared_y_axis=True,
-        ))
-
-    manifest_parts.append(make_two_stage_figure(data_root, out_dir, language=language, save_svg=save_svg))
 
     for dataset_key, df, prefix, overall_num, variant_num in [
         ("HG004", hg004, "hg004", "5", "6"),
@@ -1324,8 +1123,8 @@ def make_all_figures(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate refined Variant Calling figures.")
-    parser.add_argument("--data-root", type=Path, default=Path("."), help="Root folder containing the CSV report subfolders. Default: current folder.")
-    parser.add_argument("--out-dir", type=Path, default=Path("plots_refined"), help="Output folder for generated figures.")
+    parser.add_argument("--data-root", type=Path, default=Path("results"), help="Folder containing the curated evaluation CSVs. Default: results/.")
+    parser.add_argument("--out-dir", type=Path, default=Path("results/plots"), help="Output folder for generated figures. Default: results/plots/.")
     parser.add_argument("--language", "--lang", choices=["es", "en"], default="es", help="Figure language: 'es' or 'en'. Default: es.")
     parser.add_argument("--save-svg", action="store_true", help="Also save editable SVG files. PNG files are always generated.")
     parser.add_argument("--pct-decimals", type=int, default=2, choices=[0, 1, 2, 3], help="Decimals for percentage labels vs DV baseline. Default: 2.")

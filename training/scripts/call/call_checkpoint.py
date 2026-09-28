@@ -28,9 +28,10 @@ A clean intermediate CSV with:
 
 This script writes all rows, including 0/0 predictions. It does not decide
 FILTER, QUAL, RefCall, PASS, no-call, or whether a row should be emitted in the
-final VCF. Those policies belong to a later calls_to_vcf.py step.
+final VCF. Those policies belong to a separate VCF-export step.
 
-The CSV is intended as the input to a future calls_to_vcf.py script.
+The CSV is intended as input to that exporter. The exporter is not included in
+this repository snapshot and should be synchronized before public release.
 """
 
 from __future__ import annotations

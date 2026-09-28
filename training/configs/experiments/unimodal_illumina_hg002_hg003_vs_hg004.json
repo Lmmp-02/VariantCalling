@@ -20,6 +20,21 @@
     "root_dir": "training/out/experiments"
   },
   "dataset_policy": {
-    "modality": "illumina"
-  }
+    "mode": "illumina_only",
+    "modality": "illumina",
+    "groups_keep": [
+      10,
+      11
+    ],
+    "target": "label",
+    "label_source": "dataset.label",
+    "variant_type_source": "dataset.variant_type",
+    "keep_vt_mismatch": true,
+    "join_definition": "singleton-locus late merge"
+  },
+  "split_id": "hg002_hg003_train__hg004_valtest__singleton_locus",
+  "default_eval_suites": [
+    "hg005_final_test_40x__singleton_locus"
+  ],
+  "notes": "Canonical unimodal Illumina baseline using the unified train_unimodal.py trainer."
 }

@@ -1,20 +1,15 @@
-# Políticas de unión de datasets multimodales
+# Multimodal join policies
 
-Las salidas actuales bajo `data/4_out/datasets/multimodal/by_subject/<dataset_id>/outer/` corresponden a `singleton_locus`. El nombre `outer` describe la combinación de tecnologías, pero **no** incluye todos los candidatos exportados: se excluyen los loci con varios candidatos en cualquiera de las modalidades.
+## `singleton_locus` — current implementation
 
-## singleton_locus
+The current multimodal dataset is written under `data/4_out/datasets/multimodal/by_subject/<dataset_id>/outer/`.
 
-- Dataset subdir: `outer/`
-- Unit of fusion: locus
-- Retention rule: only loci with at most one Illumina candidate and at most one ONT candidate.
-- Drops non-singleton loci.
-- Intended use: controlled head-level benchmark and singleton-constrained VCF/hap.py evaluation.
-- Not intended as a complete representation of the biological candidate universe.
+- Unit of fusion: locus.
+- Retention rule: at most one Illumina candidate and at most one ONT candidate at a locus.
+- Non-singleton loci are excluded.
+- The physical folder name `outer/` must not be interpreted as a candidate-complete outer join.
+- Intended use: the controlled downstream-head benchmark and singleton-constrained calling evaluation.
 
-## variant_key (experimental)
+## `variant_key` — planned extension
 
-- Dataset subdir previsto: `variant_key/`.
-- Unit of fusion: `variant_key`
-- Retention rule: preserve all exported candidates; match modalities only when the exact candidate key agrees.
-- Same locus with different candidates is retained as separate rows.
-- Uso previsto: comparación que conserva candidatos y facilita el puente hacia VCF/hap.py.
+A future candidate-preserving join should use exported `variant_key` metadata to retain all candidates and match technologies only when candidate identity agrees. This builder is not implemented in the current repository.

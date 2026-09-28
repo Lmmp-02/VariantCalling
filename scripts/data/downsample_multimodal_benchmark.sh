@@ -6,7 +6,7 @@ THREADS="${THREADS:-8}"
 CONDA_ENV="${CONDA_ENV:-hts}"
 DRY_RUN="${DRY_RUN:-0}"
 FORCE="${FORCE:-0}"
-MICROMAMBA_BIN="${MICROMAMBA_BIN:-/home/lantik-deploy/jlazaro/bin/micromamba}"
+MICROMAMBA_BIN="${MICROMAMBA_BIN:-$(command -v micromamba || true)}"
 MOSDEPTH_ROOT="${MOSDEPTH_ROOT:-data/4_out/mosdepth_multimodal_benchmark}"
 
 echo "[INFO] Manifest   : $MANIFEST_PATH"

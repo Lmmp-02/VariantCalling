@@ -8,7 +8,7 @@ This trainer consumes:
 - an experiment config JSON
 - a resolved split JSON
 
-It uses the canonical multimodal OUTER datasets and applies a unimodal view:
+It uses the canonical multimodal singleton-locus datasets and applies a unimodal view:
 - modality=illumina -> keep groups {10, 11}, use ill_embeddings
 - modality=ont      -> keep groups {1, 11}, use ont_embeddings
 
@@ -19,7 +19,7 @@ Example
 -------
 python training/scripts/train/unimodal/train_unimodal.py \
   --experiment_config training/configs/experiments/unimodal_illumina_hg002_hg003_vs_hg004.json \
-  --resolved_split training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json \
+  --resolved_split training/out/resolved/hg002_hg003_train__hg004_valtest__singleton_locus.json \
   --modality illumina
 """
 

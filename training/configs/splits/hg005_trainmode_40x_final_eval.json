@@ -1,4 +1,8 @@
 {
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
   "split_id": "hg005_trainmode_40x_final_eval",
   "split_strategy": "scope_partition",
   "source_type": "multimodal",
@@ -10,9 +14,18 @@
       {
         "dataset_id": "hg005_chr20_chr21_harmonized_40x",
         "subject": "HG005",
-        "chroms": ["chr20", "chr21"],
+        "chroms": [
+          "chr20",
+          "chr21"
+        ],
         "coverage": "40x"
       }
     ]
+  },
+  "dataset_policy": {
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "locus",
+    "physical_subdir": "outer",
+    "interpretation": "Non-singleton loci are excluded before evaluation."
   }
 }

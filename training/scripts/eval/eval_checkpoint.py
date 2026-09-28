@@ -12,7 +12,7 @@ This script evaluates on labelled offline datasets, typically:
 - test = HG004 chr20
 
 It is meant for internal supervised evaluation, not for external HG005 calling.
-For HG005 calling datasets, use a future call_checkpoint.py / calling script.
+For calling-mode inference, use `training/scripts/call/call_checkpoint.py`.
 
 Supported sources
 -----------------
@@ -20,7 +20,7 @@ Supported sources
    Evaluates a trained model checkpoint from training/out/experiments/<experiment_id>/
 
 2. source=teacher
-   Evaluates DeepVariant teacher logits/probs stored inside the multimodal OUTER shards:
+   Evaluates DeepVariant teacher logits/probs stored inside the multimodal singleton-locus shards:
    - teacher=illumina -> ill_probs / ill_logits over groups {10,11}
    - teacher=ont      -> ont_probs / ont_logits over groups {1,11}
 
@@ -50,7 +50,7 @@ Example: DV teacher
 python training/scripts/eval/eval_checkpoint.py \
   --source teacher \
   --teacher illumina \
-  --resolved_split training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json \
+  --resolved_split training/out/resolved/hg002_hg003_train__hg004_valtest__singleton_locus.json \
   --partition test
 """
 

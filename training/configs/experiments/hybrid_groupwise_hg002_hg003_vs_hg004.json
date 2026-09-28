@@ -3,9 +3,9 @@
   "model_family": "hybrid_groupwise_3c",
   "source_type": "multimodal",
   "train_script": "training/scripts/train/hybrid/train_hybrid.py",
-  "split_id": "hg002_hg003_train__hg004_valtest",
+  "split_id": "hg002_hg003_train__hg004_valtest__singleton_locus",
   "default_eval_suites": [
-    "hg005_final_test_40x"
+    "hg005_final_test_40x__singleton_locus"
   ],
   "seed": 0,
   "hyperparams": {
@@ -25,12 +25,16 @@
   },
   "dataset_policy": {
     "mode": "hybrid",
-    "groups_keep": [1, 10, 11],
+    "groups_keep": [
+      1,
+      10,
+      11
+    ],
     "target": "label",
     "label_source": "dataset.label",
     "variant_type_source": "dataset.variant_type",
     "keep_vt_mismatch": true,
-    "join_definition": "locus-level late merge"
+    "join_definition": "singleton-locus late merge"
   },
   "outputs": {
     "root_dir": "training/out/experiments"

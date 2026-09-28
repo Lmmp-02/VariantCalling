@@ -9,16 +9,13 @@ Supported:
 
 Typical usage:
     python training/scripts/preprocess/resolve_eval_suite.py \
-      --eval_suite_config training/configs/eval_suites/hg005_final_test_40x.json
-
-    python training/scripts/preprocess/resolve_eval_suite.py \
-      --eval_suite_config training/configs/eval_suites/hg005_coverage_sweep.json \
-      --output_json training/out/experiments/debug_eval/resolved_eval_suite.json
+      --eval_suite_config training/configs/eval_suites/hg005_final_test_40x__singleton_locus.json \
+      --output_json training/out/resolved/hg005_final_test_40x__singleton_locus.json
 
 Notes:
 - Multimodal dataset condition is controlled by dataset_selector:
-    - join_policy: e.g. singleton_locus, candidate_key
-    - dataset_subdir: e.g. outer, candidate_key
+    - join_policy: singleton_locus
+    - dataset_subdir: outer
 """
 
 from __future__ import annotations

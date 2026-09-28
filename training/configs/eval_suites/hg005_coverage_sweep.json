@@ -1,4 +1,8 @@
 {
+  "dataset_selector": {
+    "join_policy": "singleton_locus",
+    "dataset_subdir": "outer"
+  },
   "eval_suite_id": "hg005_coverage_sweep",
   "source_type": "multimodal",
   "description": "Coverage sweep on HG005 chr20+chr21 using a fixed trained model.",
@@ -7,7 +11,10 @@
       "target_id": "hg005_chr20_chr21_40x",
       "dataset_id": "hg005_chr20_chr21_harmonized_40x",
       "subject": "HG005",
-      "chroms": ["chr20", "chr21"],
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
       "coverage": "40x",
       "role": "coverage_sweep"
     },
@@ -15,7 +22,10 @@
       "target_id": "hg005_chr20_chr21_20x",
       "dataset_id": "hg005_chr20_chr21_coverage_study_20x",
       "subject": "HG005",
-      "chroms": ["chr20", "chr21"],
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
       "coverage": "20x",
       "role": "coverage_sweep"
     },
@@ -23,7 +33,10 @@
       "target_id": "hg005_chr20_chr21_10x",
       "dataset_id": "hg005_chr20_chr21_coverage_study_10x",
       "subject": "HG005",
-      "chroms": ["chr20", "chr21"],
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
       "coverage": "10x",
       "role": "coverage_sweep"
     },
@@ -31,9 +44,18 @@
       "target_id": "hg005_chr20_chr21_5x",
       "dataset_id": "hg005_chr20_chr21_coverage_study_5x",
       "subject": "HG005",
-      "chroms": ["chr20", "chr21"],
+      "chroms": [
+        "chr20",
+        "chr21"
+      ],
       "coverage": "5x",
       "role": "coverage_sweep"
     }
-  ]
+  ],
+  "dataset_policy": {
+    "candidate_universe": "restricted_singleton_locus",
+    "unit_of_fusion": "locus",
+    "physical_subdir": "outer",
+    "interpretation": "Non-singleton loci are excluded before evaluation."
+  }
 }

@@ -11,11 +11,8 @@ Supported split strategies:
 
 Typical usage:
     python training/scripts/preprocess/resolve_split.py \
-      --split_config training/configs/splits/hg002_hg003_train__hg004_valtest.json
-
-    python training/scripts/preprocess/resolve_split.py \
-      --split_config training/configs/splits/legacy_hg003_chr20_bins.json \
-      --output_json training/out/experiments/debug_legacy/resolved_split.json
+      --split_config training/configs/splits/hg002_hg003_train__hg004_valtest__singleton_locus.json \
+      --output_json training/out/resolved/hg002_hg003_train__hg004_valtest__singleton_locus.json
 
 Notes:
 - For scope_partition, the resolver preserves chroms as declared in the config.
@@ -26,8 +23,8 @@ Notes:
   on chr20 and chr21 is treated as a different genomic block.
 - Dataset path derivation is intentionally lightweight and convention-based.
 - Multimodal dataset condition is controlled by dataset_selector:
-    - join_policy: e.g. singleton_locus, variant_key
-    - dataset_subdir: e.g. outer, variant_key
+    - join_policy: singleton_locus
+    - dataset_subdir: outer
 """
 
 from __future__ import annotations

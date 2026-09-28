@@ -45,7 +45,7 @@
 
 
 # =============================================================================
-# Local / cluster / temporary folders
+# Local / temporary folders
 # =============================================================================
 
 /out/
@@ -54,99 +54,28 @@
 /legacy/
 /scrap/
 /tools/
-
 /.udocker/
 
 
 # =============================================================================
-# DeepVariant generated heavy artifacts
+# Generated pipeline artifacts
 # =============================================================================
 
-# make_examples TFRecords and heavy outputs
-/data/4_out/deepvariant/examples/**/*.tfrecord*
-/data/4_out/deepvariant/examples/**/make_examples*.tfrecord*
-/data/4_out/deepvariant/examples/**/intermediate/
-/data/4_out/deepvariant/examples/**/logs/
+# DeepVariant examples/calls and offline datasets are regenerated locally.
+/data/4_out/deepvariant/
+/data/4_out/datasets/
 
-# Legacy / old DeepVariant paths
-/data/4_out/deepvariant/HG003/
-/data/4_out/deepvariant/full_calls/
+# Supporting-study runtime outputs are regenerated locally; curated study
+# results live under studies/deepvariant_low_coverage/results/.
+/data/4_out/happy/
+/data/4_out/mosdepth/HG003/
 
-
-# =============================================================================
-# Offline datasets generated from DeepVariant
-# =============================================================================
-
-# IMPORTANT:
-# Do NOT ignore the whole /data/4_out/datasets/ folder.
-# We want to version lightweight metadata such as:
-# - join_manifest.json
-# - join_policy.json
-# - *_report.json
-# - export_manifest.json
-# - SUCCESS markers
-#
-# Only ignore heavy dataset shards and optional large metadata tables.
-
-/data/4_out/datasets/**/*.npz
-/data/4_out/datasets/**/*.npy
-/data/4_out/datasets/**/*.pt
-/data/4_out/datasets/**/*.pth
-/data/4_out/datasets/**/*.h5
-/data/4_out/datasets/**/*.hdf5
-/data/4_out/datasets/**/*.parquet
-
-# Large optional row-level metadata CSVs.
-/data/4_out/datasets/**/*_meta.csv
-
-# Dataset logs/intermediate temp files.
-/data/4_out/datasets/**/logs/
-/data/4_out/datasets/**/intermediate/
-
-# Legacy backup datasets outside the canonical path.
-/data/4_out/datasets/multimodal/by_subject/backup_calling/
-
-
-# =============================================================================
-# Reports
-# =============================================================================
-
-# Keep this folder versionable by default because lightweight reports/audits can
-# be useful for traceability. Ignore only obvious heavy report payloads.
-/data/4_out/reports/**/*.npz
-/data/4_out/reports/**/*.npy
-/data/4_out/reports/**/*.pt
-/data/4_out/reports/**/*.pth
-
-
-# =============================================================================
-# Training outputs
-# =============================================================================
-
-# Keep configs and registries versionable, but ignore generated heavy outputs.
-
-/training/out/calls/
-/training/out/slurm/
-
-/training/out/experiments/**/*.pt
-/training/out/experiments/**/*.pth
-/training/out/experiments/**/*.ckpt
-/training/out/experiments/**/*.npz
-/training/out/experiments/**/*.npy
-
-/training/out/reports/**/*.npz
-/training/out/reports/**/*.npy
-
-# TensorBoard / experiment logs
-/training/out/**/events.out.tfevents.*
-/training/out/**/wandb/
-/training/out/**/lightning_logs/
-
-# Generated training configuration
+# Training outputs/checkpoints/reports are regenerated locally.
+/training/out/
 /training/configs/**/resolved__*.json
 
-# Generated training/runtime outputs
-/training/out/
+# Generated figures from the curated main result tables.
+/results/plots/
 
 
 # =============================================================================

@@ -15,7 +15,7 @@ Important:
   one ONT candidate.
 - Non-singleton loci are excluded before training/evaluation.
 
-For candidate-preserving joins, use the future candidate_key builder.
+For candidate-preserving joins, use the future variant_key builder.
 """
 
 from __future__ import annotations

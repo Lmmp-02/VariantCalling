@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Unified hybrid trainer for canonical multimodal OUTER datasets.
+Unified hybrid trainer for canonical multimodal singleton-locus datasets.
 
 Supported model families
 ------------------------
@@ -13,7 +13,7 @@ This trainer consumes:
 - an experiment config JSON
 - a resolved split JSON
 
-It uses the canonical multimodal OUTER datasets and the unified dataset label:
+It uses the canonical multimodal singleton-locus datasets and the unified dataset label:
 - keep groups {1, 10, 11}
 - target = dataset.label
 
@@ -26,7 +26,7 @@ Example
 -------
 python training/scripts/train/hybrid/train_hybrid.py \
   --experiment_config training/configs/experiments/hybrid_groupwise_hg002_hg003_vs_hg004.json \
-  --resolved_split training/configs/splits/resolved__hg002_hg003_train__hg004_valtest.json \
+  --resolved_split training/out/resolved/hg002_hg003_train__hg004_valtest__singleton_locus.json \
   --device cpu
 """
 
