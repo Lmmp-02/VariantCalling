@@ -35,6 +35,26 @@ In the prediction dumps and the analysis CSVs, models are named as follows:
 
 where `<head>` is `unimodal_illumina`, `unimodal_ont`, `hybrid_simple` or `hybrid_groupwise`.
 
+## Environment
+
+The training and paper-analysis environment is pinned in `requirements/training.txt`. It
+was tested with Python 3.9.18. The measured PyTorch 2.8.0 build used CUDA 12.8. CPU is
+sufficient for Level 1 analysis and model evaluation; a GPU is recommended for training.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements/training.txt
+```
+
+Level 0 (regenerating figures and tables from the versioned result files) deliberately uses
+the smaller `paper/requirements.txt` environment instead.
+
+The DeepVariant stages do not require this Python environment. They run inside the
+container selected by `--runtime docker|udocker`: `dv_make_examples.sh` defaults to
+`google/deepvariant:1.9.0`, while `dv_export_features.sh` defaults to
+`google/deepvariant:1.9.0-gpu`.
+
 ## Running
 
 Prerequisites: the singleton-locus offline datasets (built with `scripts/multimodal/`) and

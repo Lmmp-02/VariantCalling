@@ -1,3 +1,5 @@
+# Level 0 only: regenerate the paper figures and tables from versioned results.
+# For Levels 1-2 (analysis/evaluation/training), use requirements/training.txt.
 numpy>=1.26
 pandas>=2.2
 matplotlib>=3.8
