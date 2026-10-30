@@ -57,18 +57,30 @@ container selected by `--runtime docker|udocker`: `dv_make_examples.sh` defaults
 
 ## Running
 
-Prerequisites: the singleton-locus offline datasets (built with `scripts/multimodal/`) and
-the four canonical seed-0 checkpoints, trained with `training/scripts/train/` and the
-configs in `training/configs/experiments/`.
+Prerequisite: the singleton-locus offline datasets built with `scripts/multimodal/`. The
+`canonical` stage trains the four representation heads at seed 0 from the canonical configs
+in `training/configs/experiments/`; the `train` stage then verifies those checkpoints before
+training the remaining 36 seed / probability-input heads.
 
 ```bash
-bash training/scripts/paper/run_paper_experiments.sh resolve configs train dump analyse
-# or
+bash training/scripts/paper/run_paper_experiments.sh \
+  resolve configs canonical train dump analyse
+# or, equivalently
 bash training/scripts/paper/run_paper_experiments.sh all
 ```
 
 Set `DEVICE=cuda` (or `cpu`) to force a device. The script runs every step in sequence and
 needs no job scheduler. On a cluster, the same commands can be wrapped in job scripts.
+
+To inspect the full execution plan without creating directories, generating configs,
+training models or writing outputs, set `DRY_RUN=1`:
+
+```bash
+DRY_RUN=1 bash training/scripts/paper/run_paper_experiments.sh all
+```
+
+The full dry run prints 40 `[Train]` entries: four canonical representation heads followed
+by the 36 seed / probability-input heads.
 
 Outputs:
 
