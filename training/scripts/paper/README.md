@@ -9,6 +9,7 @@ datasets and checkpoints. They do not change the canonical pipeline or its outpu
 | `make_seed_configs.py` | any | Writes seed replicates of the four canonical configs. Only `seed`, `experiment_id`, `outputs.root_dir`, `notes` and, optionally, `hyperparams.input_features` change. |
 | `dump_predictions.py` | GPU recommended | Writes one NPZ per evaluation set with, for every candidate, the DeepVariant probabilities, the probabilities of each checkpoint and the candidate metadata. |
 | `analyse_predictions.py` | CPU | Computes per-view metrics, per-group errors, seed summaries, 1 Mb block-bootstrap confidence intervals and exact McNemar tests. Needs numpy and pandas only. |
+| `compare_with_reference.py` | CPU | Compares regenerated analysis CSVs with the published reference, either bit-near-exactly (Level 1) or against the published seed ranges (Level 2). |
 | `run_paper_experiments.sh` | — | Runs the whole sequence on one machine, stage by stage. |
 
 ## Experiments
@@ -91,6 +92,30 @@ Outputs:
 
 `analyse_predictions.py` reads every NPZ in the prediction folder. When several dumps exist
 for the same evaluation set, it prefers `__all` over `__seeds0-4` over `__seed0`.
+
+## Comparing a rerun with the published analysis
+
+Level 1 re-analyses the published prediction dumps, so its three primary CSVs should match
+the versioned reference rows exactly apart from floating-point noise up to `1e-12`:
+
+```bash
+python training/scripts/paper/compare_with_reference.py \
+  --analysis_dir training/out/paper/analysis \
+  --mode exact
+```
+
+Level 2 retrains the lightweight heads and is therefore not expected to be bit-exact on a
+GPU. In `tolerance` mode, model names are reduced to families by stripping a trailing
+`__seed<N>`; for each evaluation set and view, the rerun median error count must lie inside
+the published seed range. Per-seed error differences are printed for diagnosis:
+
+```bash
+python training/scripts/paper/compare_with_reference.py \
+  --analysis_dir training/out/paper/analysis \
+  --mode tolerance
+```
+
+The default reference in both cases is `results/paper/analysis`.
 
 ## Notes
 
