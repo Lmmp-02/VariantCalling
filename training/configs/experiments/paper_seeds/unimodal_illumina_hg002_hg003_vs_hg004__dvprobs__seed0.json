@@ -1,0 +1,41 @@
+{
+  "experiment_id": "unimodal_illumina_hg002_hg003_vs_hg004__dvprobs__seed0",
+  "model_family": "illumina_only",
+  "source_type": "multimodal",
+  "train_script": "training/scripts/train/unimodal/train_unimodal.py",
+  "seed": 0,
+  "hyperparams": {
+    "epochs": 10,
+    "batch_size": 2048,
+    "lr": 0.0003,
+    "weight_decay": 0.0005,
+    "arch": "mlp",
+    "hidden": 512,
+    "dropout": 0.1,
+    "input_features": "dv_probs"
+  },
+  "selection": {
+    "save_best_on": "val_macro_f1"
+  },
+  "outputs": {
+    "root_dir": "training/out/experiments/paper_seeds"
+  },
+  "dataset_policy": {
+    "mode": "illumina_only",
+    "modality": "illumina",
+    "groups_keep": [
+      10,
+      11
+    ],
+    "target": "label",
+    "label_source": "dataset.label",
+    "variant_type_source": "dataset.variant_type",
+    "keep_vt_mismatch": true,
+    "join_definition": "singleton-locus late merge"
+  },
+  "split_id": "hg002_hg003_train__hg004_valtest__singleton_locus",
+  "default_eval_suites": [
+    "hg005_final_test_40x__singleton_locus"
+  ],
+  "notes": "Paper replicate of unimodal_illumina_hg002_hg003_vs_hg004 (seed=0, input_features=dv_probs)."
+}
