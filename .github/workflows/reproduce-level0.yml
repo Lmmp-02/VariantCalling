@@ -1,0 +1,47 @@
+name: Reproduce Level 0
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-level0:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: paper/requirements.txt
+
+      - name: Install Level 0 requirements
+        run: python -m pip install -r paper/requirements.txt
+
+      - name: Regenerate paper figures and tables
+        run: |
+          python paper/make_all.py
+          git diff --exit-code paper/tables
+
+      - name: Regenerate HG003 normalized reports
+        run: bash studies/hg003_chr20_initial_validation/regenerate_reports.sh
+
+      - name: Check analysis comparison tests
+        run: python training/scripts/paper/test_compare_with_reference.py
+
+      - name: Compile Python sources
+        run: python -m compileall -q training scripts paper studies
+
+      - name: Check shell syntax
+        shell: bash
+        run: |
+          while IFS= read -r -d '' script; do
+            echo "Checking ${script}"
+            bash -n "${script}"
+          done < <(find . -type f -name '*.sh' -not -path './.git/*' -print0)
