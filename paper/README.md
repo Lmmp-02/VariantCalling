@@ -19,11 +19,11 @@ No dataset, checkpoint or GPU is needed. The run takes a few seconds.
 | Figure 2 (head architectures) | schematic: `figures/schematics/fig2_heads_architecture.drawio` | — |
 | Figure 3 (macro-F1 at 40×) | `scripts/make_figures.py` | `results/paper/analysis/view_metrics.csv` |
 | Figure 4 (coverage) | `scripts/make_figures.py` | `results/paper/analysis/view_metrics.csv` |
-| Table 1 (HG003 probes) | `studies/hg003_chr20_initial_validation/` | that study's evaluation reports |
+| Table 1 (HG003 probes) | `studies/hg003_chr20_initial_validation/reporting/make_paper_tables.py` | that study's `evaluation/` reports |
 | Table 2 (errors at 40×) | `scripts/make_tables.py` | `view_metrics.csv` |
 | Table 3 (errors by group) | `scripts/make_tables.py` | `group_errors.csv` |
 | Table 4 (input types) | `scripts/make_tables.py` | `view_metrics.csv` |
-| Table 5 (two-stage, HG003) | `studies/hg003_chr20_initial_validation/` | that study's evaluation reports |
+| Table 5 (two-stage, HG003) | `studies/hg003_chr20_initial_validation/reporting/make_paper_tables.py` | that study's `evaluation/` and `historical_outputs/two_stage/` reports |
 | Table 6 (end-to-end DeepVariant) | `scripts/make_tables.py` | `studies/deepvariant_low_coverage/results/benchmark_summary.csv` |
 | Table 7 (group composition) | `scripts/make_tables.py` | `group_errors.csv` (class support of the DeepVariant rows) |
 | Table 8 (singleton-locus audit) | `scripts/make_tables.py` | `results/paper/singleton_audit/` |
