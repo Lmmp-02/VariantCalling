@@ -6,7 +6,7 @@ Companion repository for the paper *When Does a Second Sequencing Technology Hel
 
 **Status:** preprint draft, October 2026
 
-**Paper artefacts:** Zenodo record `23804374`, reserved DOI [`10.5281/zenodo.23804374`](https://doi.org/10.5281/zenodo.23804374)
+**Paper artefacts:** Zenodo record `23804374`, DOI [`10.5281/zenodo.23804374`](https://doi.org/10.5281/zenodo.23804374)
 
 This repository contains the code, experiment configuration and versioned numerical results needed to reproduce the paper at four levels. DeepVariant is kept technology-specific and unchanged; lightweight downstream heads are evaluated offline on a singleton-locus candidate set built from paired Illumina and Oxford Nanopore (ONT) data. These experiments are **candidate-level analyses, not end-to-end variant-calling improvements over DeepVariant**.
 
@@ -19,7 +19,7 @@ This repository contains the code, experiment configuration and versioned numeri
 | **2** | The 40 heads, prediction dumps and analysis CSVs | Seven multimodal dataset archives — 11.4 GB | GPU recommended; hours, hardware-dependent | `scripts/fetch_paper_artifacts.sh --record 23804374 --what datasets`<br>`bash training/scripts/paper/run_paper_experiments.sh all`<br>`python training/scripts/paper/compare_with_reference.py --analysis_dir training/out/paper/analysis --mode tolerance` |
 | **3** | The seven singleton-locus multimodal datasets from public sequencing inputs | Public GIAB / ONT BAMs, reference and truth data; size depends on source preparation | HPC-class; not benchmarked end to end outside the original cluster | Prepare inputs as in [`docs/reproduce_datasets.md`](docs/reproduce_datasets.md), then `bash scripts/reproduce_datasets.sh --runtime docker`<br>`python scripts/multimodal/check_group_counts.py` |
 
-The Zenodo record also contains `paper_checkpoints.tar` (169.6 MB), with the 4 canonical and 36 paper checkpoints. Archives are extracted at the repository root; internal paths are repository-relative. While the Zenodo record remains a draft, `scripts/fetch_paper_artifacts.sh` accepts a personal token through `ZENODO_TOKEN`. No token is required after publication.
+The Zenodo record also contains `paper_checkpoints.tar` (169.6 MB), with the 4 canonical and 36 paper checkpoints. Archives are extracted at the repository root; internal paths are repository-relative. The record is public, so `scripts/fetch_paper_artifacts.sh` does not require a token.
 
 ## Quick start — Level 0
 
@@ -57,4 +57,4 @@ The benchmark uses GIAB HG002–HG005 Illumina data and GIAB v4.2.1 truth/confid
 
 ## Citation and licences
 
-Code in this repository is released under the [MIT licence](LICENSE). The Zenodo dataset is released under **CC BY 4.0** and has reserved DOI [`10.5281/zenodo.23804374`](https://doi.org/10.5281/zenodo.23804374). Citation metadata for the software and preferred paper citation are in [`CITATION.cff`](CITATION.cff); author and paper-DOI fields remain placeholders until the manuscript metadata is final.
+Code in this repository is released under the [MIT licence](LICENSE). The Zenodo dataset is released under **CC BY 4.0** and has DOI [`10.5281/zenodo.23804374`](https://doi.org/10.5281/zenodo.23804374). Citation metadata for the software and preferred paper citation are in [`CITATION.cff`](CITATION.cff); author and paper-DOI fields remain placeholders until the manuscript metadata is final.
