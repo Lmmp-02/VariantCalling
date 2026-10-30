@@ -1,0 +1,8 @@
+# Training / Level 1-2 environment.
+# Tested with Python 3.9.18.
+# The measured PyTorch 2.8.0 build used CUDA 12.8.
+# CPU is sufficient for Level 1 and evaluation; GPU is recommended for training.
+torch==2.8.0
+numpy==2.0.2
+pandas==2.3.3
+matplotlib==3.9.4

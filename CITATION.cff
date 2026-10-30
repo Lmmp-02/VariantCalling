@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the preferred paper below."
+title: "VariantCalling"
+type: software
+authors:
+  - family-names: "[to be confirmed]"
+    given-names: "[to be confirmed]"
+repository-code: "https://github.com/Lmmp-02/VariantCalling"
+license: MIT
+preferred-citation:
+  type: article
+  title: "When Does a Second Sequencing Technology Help? Late Fusion of Technology-Specific DeepVariant Models under Reduced Coverage"
+  authors:
+    - family-names: "[to be confirmed]"
+      given-names: "[to be confirmed]"
+  # doi: "[to be confirmed]"

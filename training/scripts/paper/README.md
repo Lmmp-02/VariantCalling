@@ -9,6 +9,7 @@ datasets and checkpoints. They do not change the canonical pipeline or its outpu
 | `make_seed_configs.py` | any | Writes seed replicates of the four canonical configs. Only `seed`, `experiment_id`, `outputs.root_dir`, `notes` and, optionally, `hyperparams.input_features` change. |
 | `dump_predictions.py` | GPU recommended | Writes one NPZ per evaluation set with, for every candidate, the DeepVariant probabilities, the probabilities of each checkpoint and the candidate metadata. |
 | `analyse_predictions.py` | CPU | Computes per-view metrics, per-group errors, seed summaries, 1 Mb block-bootstrap confidence intervals and exact McNemar tests. Needs numpy and pandas only. |
+| `compare_with_reference.py` | CPU | Compares regenerated analysis CSVs with the published reference, either bit-near-exactly (Level 1) or against the published seed ranges (Level 2). |
 | `run_paper_experiments.sh` | — | Runs the whole sequence on one machine, stage by stage. |
 
 ## Experiments
@@ -35,20 +36,52 @@ In the prediction dumps and the analysis CSVs, models are named as follows:
 
 where `<head>` is `unimodal_illumina`, `unimodal_ont`, `hybrid_simple` or `hybrid_groupwise`.
 
-## Running
+## Environment
 
-Prerequisites: the singleton-locus offline datasets (built with `scripts/multimodal/`) and
-the four canonical seed-0 checkpoints, trained with `training/scripts/train/` and the
-configs in `training/configs/experiments/`.
+The training and paper-analysis environment is pinned in `requirements/training.txt`. It
+was tested with Python 3.9.18. The measured PyTorch 2.8.0 build used CUDA 12.8. CPU is
+sufficient for Level 1 analysis and model evaluation; a GPU is recommended for training.
 
 ```bash
-bash training/scripts/paper/run_paper_experiments.sh resolve configs train dump analyse
-# or
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements/training.txt
+```
+
+Level 0 (regenerating figures and tables from the versioned result files) deliberately uses
+the smaller `paper/requirements.txt` environment instead.
+
+The DeepVariant stages do not require this Python environment. They run inside the
+container selected by `--runtime docker|udocker`: `dv_make_examples.sh` defaults to
+`google/deepvariant:1.9.0`, while `dv_export_features.sh` defaults to
+`google/deepvariant:1.9.0-gpu`.
+
+## Running
+
+Prerequisite: the singleton-locus offline datasets built with `scripts/multimodal/`. The
+`canonical` stage trains the four representation heads at seed 0 from the canonical configs
+in `training/configs/experiments/`; the `train` stage then verifies those checkpoints before
+training the remaining 36 seed / probability-input heads.
+
+```bash
+bash training/scripts/paper/run_paper_experiments.sh \
+  resolve configs canonical train dump analyse
+# or, equivalently
 bash training/scripts/paper/run_paper_experiments.sh all
 ```
 
 Set `DEVICE=cuda` (or `cpu`) to force a device. The script runs every step in sequence and
 needs no job scheduler. On a cluster, the same commands can be wrapped in job scripts.
+
+To inspect the full execution plan without creating directories, generating configs,
+training models or writing outputs, set `DRY_RUN=1`:
+
+```bash
+DRY_RUN=1 bash training/scripts/paper/run_paper_experiments.sh all
+```
+
+The full dry run prints 40 `[Train]` entries: four canonical representation heads followed
+by the 36 seed / probability-input heads.
 
 Outputs:
 
@@ -59,6 +92,30 @@ Outputs:
 
 `analyse_predictions.py` reads every NPZ in the prediction folder. When several dumps exist
 for the same evaluation set, it prefers `__all` over `__seeds0-4` over `__seed0`.
+
+## Comparing a rerun with the published analysis
+
+Level 1 re-analyses the published prediction dumps, so its three primary CSVs should match
+the versioned reference rows exactly apart from floating-point noise up to `1e-12`:
+
+```bash
+python training/scripts/paper/compare_with_reference.py \
+  --analysis_dir training/out/paper/analysis \
+  --mode exact
+```
+
+Level 2 retrains the lightweight heads and is therefore not expected to be bit-exact on a
+GPU. In `tolerance` mode, model names are reduced to families by stripping a trailing
+`__seed<N>`; for each evaluation set and view, the rerun median error count must lie inside
+the published seed range. Per-seed error differences are printed for diagnosis:
+
+```bash
+python training/scripts/paper/compare_with_reference.py \
+  --analysis_dir training/out/paper/analysis \
+  --mode tolerance
+```
+
+The default reference in both cases is `results/paper/analysis`.
 
 ## Notes
 
