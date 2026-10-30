@@ -1,0 +1,12 @@
+{
+  "prob_fusion_val_macro_f1": null,
+  "eval_sets": {
+    "hg004_chr20_40x": "training/out/paper/predictions/hg004_chr20_40x__all.npz",
+    "hg005_10x": "training/out/paper/predictions/hg005_10x__all.npz",
+    "hg005_20x": "training/out/paper/predictions/hg005_20x__all.npz",
+    "hg005_40x": "training/out/paper/predictions/hg005_40x__all.npz",
+    "hg005_5x": "training/out/paper/predictions/hg005_5x__all.npz"
+  },
+  "n_boot": 1000,
+  "block_bp": 1000000
+}

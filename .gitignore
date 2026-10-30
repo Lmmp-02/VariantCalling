@@ -77,6 +77,9 @@
 # Generated figures from the curated main result tables.
 /results/plots/
 
+# Generated paper figures (regenerate with paper/make_all.py).
+/paper/figures/generated/
+
 
 # =============================================================================
 # Editor / OS noise

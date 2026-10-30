@@ -1,0 +1,5 @@
+dataset,kept_by_outer_singleton_rule,rows,truth_positive,truth_positive_snp_vcf,truth_positive_indel_vcf,truth_positive_variant_type_1,truth_positive_variant_type_2,multi_selected_alt_rows,multi_full_alt_rows,unique_loci
+illumina,0,6459,4589,439,4138,397,4192,1697,4889,3133
+illumina,1,184152,124830,112258,12572,112258,12572,0,0,184152
+ont,0,111329,14947,340,14475,183,14764,50401,111128,25198
+ont,1,409654,123030,112354,10676,112354,10676,0,0,409654

@@ -53,3 +53,12 @@ cmp \
   "$ROOT/results/hg003_summary_internal_test_long.csv"
 
 echo "OK: normalized HG003 chr20 summary reproduces exactly."
+
+# Rebuild Tables 1 and 5 of the classical paper and compare them with the versioned ones.
+REPO="$(cd "$ROOT/../.." && pwd)"
+python "$ROOT/reporting/make_paper_tables.py" --out_dir "$TMP/tables"
+for t in tab1_hg003_probes tab5_two_stage; do
+  cmp "$TMP/tables/$t.tex" "$REPO/paper/tables/$t.tex"
+done
+
+echo "OK: paper Tables 1 and 5 reproduce exactly."
