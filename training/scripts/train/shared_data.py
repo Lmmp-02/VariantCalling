@@ -42,6 +42,7 @@ class ShardSelection:
     mask_ont: np.ndarray
     variant_type: np.ndarray
     variant_type_mismatch: np.ndarray
+    input_features: str = "embeddings"
 
     @property
     def n(self) -> int:
@@ -125,6 +126,50 @@ def _as_str_array(x: np.ndarray) -> np.ndarray:
             dtype=np.str_,
         )
     return x.astype(np.str_)
+
+
+# ---------------------------------------------------------------------
+# Input feature sets
+# ---------------------------------------------------------------------
+# "embeddings": frozen DeepVariant 2048-d representations (canonical).
+# "dv_probs"  : DeepVariant output genotype probabilities (3 per technology),
+#               used as log-probabilities; zero for an absent technology.
+
+INPUT_FEATURE_SETS = ("embeddings", "dv_probs")
+_PROB_PREFIX = {"ill_embeddings": "ill", "ont_embeddings": "ont"}
+
+
+def check_input_features(input_features: str) -> str:
+    v = str(input_features or "embeddings").lower()
+    if v not in INPUT_FEATURE_SETS:
+        raise SystemExit(f"[ERROR] Unsupported input_features={input_features!r}. Allowed: {INPUT_FEATURE_SETS}")
+    return v
+
+
+def _softmax_rows(z: np.ndarray) -> np.ndarray:
+    z = z.astype(np.float64)
+    z = z - z.max(axis=1, keepdims=True)
+    e = np.exp(z)
+    return (e / e.sum(axis=1, keepdims=True)).astype(np.float32)
+
+
+def has_dv_probs(npz, prefix: str) -> bool:
+    return f"{prefix}_probs" in npz.files or f"{prefix}_logits" in npz.files
+
+
+def dv_log_probs(npz, rows: np.ndarray, prefix: str, mask: np.ndarray | None = None) -> np.ndarray:
+    """Clipped log-probabilities of DeepVariant for one technology; zero where mask == 0."""
+    if f"{prefix}_probs" in npz.files:
+        p = npz[f"{prefix}_probs"].astype(np.float32, copy=False)[rows]
+    elif f"{prefix}_logits" in npz.files:
+        p = _softmax_rows(npz[f"{prefix}_logits"][rows])
+    else:
+        raise SystemExit(f"[ERROR] Missing {prefix}_probs / {prefix}_logits in shard.")
+    p = np.nan_to_num(p, nan=1.0 / 3.0, posinf=1.0, neginf=0.0)
+    lp = np.log(np.clip(p, 1e-6, 1.0)).astype(np.float32)
+    if mask is not None:
+        lp = lp * (mask.astype(np.float32)[:, None] == 1.0)
+    return lp
 
 
 # ---------------------------------------------------------------------
@@ -286,7 +331,9 @@ def _build_partition_index(
     partition_name: str,
     feature_mode: str,
     add_masks: bool = True,
+    input_features: str = "embeddings",
 ) -> PartitionIndex:
+    input_features = check_input_features(input_features)
     if partition_name not in ("train", "val", "test"):
         raise SystemExit(f"[ERROR] Invalid partition_name: {partition_name}")
 
@@ -356,11 +403,21 @@ def _build_partition_index(
                 keep = base_keep & modality_keep & group_keep
 
                 feature_key = policy["feature_key"]
-                shard_input_dim = int(npz[feature_key].shape[1])
+                if input_features == "dv_probs":
+                    if not has_dv_probs(npz, _PROB_PREFIX[feature_key]):
+                        raise SystemExit(f"[ERROR] input_features=dv_probs but no DV probs/logits in {shard}")
+                    shard_input_dim = 3
+                else:
+                    shard_input_dim = int(npz[feature_key].shape[1])
 
             elif feature_mode == "hybrid":
                 keep = base_keep & np.isin(group, np.asarray([1, 10, 11], dtype=np.int64))
-                shard_input_dim = int(npz["ill_embeddings"].shape[1] + npz["ont_embeddings"].shape[1])
+                if input_features == "dv_probs":
+                    if not (has_dv_probs(npz, "ill") and has_dv_probs(npz, "ont")):
+                        raise SystemExit(f"[ERROR] input_features=dv_probs but no DV probs/logits in {shard}")
+                    shard_input_dim = 6
+                else:
+                    shard_input_dim = int(npz["ill_embeddings"].shape[1] + npz["ont_embeddings"].shape[1])
                 if add_masks:
                     shard_input_dim += 2
 
@@ -400,6 +457,7 @@ def _build_partition_index(
                     mask_ont=mask_ont_sel,
                     variant_type=vt_sel,
                     variant_type_mismatch=vtm_sel,
+                    input_features=input_features,
                 )
             )
 
@@ -452,6 +510,7 @@ def build_partition_index_unimodal(
     resolved_split_path_or_obj: Union[str, Path, Dict[str, Any]],
     partition_name: str,
     modality: str,
+    input_features: str = "embeddings",
 ) -> PartitionIndex:
     resolved = load_resolved_split(resolved_split_path_or_obj)
     modality = str(modality).lower()
@@ -465,6 +524,7 @@ def build_partition_index_unimodal(
         partition_name=partition_name,
         feature_mode=f"unimodal:{modality}",
         add_masks=False,
+        input_features=input_features,
     )
 
 
@@ -472,6 +532,7 @@ def build_partition_index_hybrid(
     resolved_split_path_or_obj: Union[str, Path, Dict[str, Any]],
     partition_name: str,
     add_masks: bool = True,
+    input_features: str = "embeddings",
 ) -> PartitionIndex:
     resolved = load_resolved_split(resolved_split_path_or_obj)
     return _build_partition_index(
@@ -479,6 +540,7 @@ def build_partition_index_hybrid(
         partition_name=partition_name,
         feature_mode="hybrid",
         add_masks=add_masks,
+        input_features=input_features,
     )
 
 
@@ -500,7 +562,10 @@ def load_unimodal_shard_features(
     feature_key = UNIMODAL_POLICIES[modality]["feature_key"]
 
     npz = np.load(shard_item.shard_path, allow_pickle=False)
-    x = npz[feature_key].astype(np.float32, copy=False)[shard_item.rows]
+    if shard_item.input_features == "dv_probs":
+        x = dv_log_probs(npz, shard_item.rows, _PROB_PREFIX[feature_key])
+    else:
+        x = npz[feature_key].astype(np.float32, copy=False)[shard_item.rows]
     y = shard_item.y.astype(np.int64, copy=False)
     npz.close()
 
@@ -512,8 +577,12 @@ def load_hybrid_shard_features(
     add_masks: bool = True,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     npz = np.load(shard_item.shard_path, allow_pickle=False)
-    ill = npz["ill_embeddings"].astype(np.float32, copy=False)[shard_item.rows]
-    ont = npz["ont_embeddings"].astype(np.float32, copy=False)[shard_item.rows]
+    if shard_item.input_features == "dv_probs":
+        ill = dv_log_probs(npz, shard_item.rows, "ill", shard_item.mask_ill)
+        ont = dv_log_probs(npz, shard_item.rows, "ont", shard_item.mask_ont)
+    else:
+        ill = npz["ill_embeddings"].astype(np.float32, copy=False)[shard_item.rows]
+        ont = npz["ont_embeddings"].astype(np.float32, copy=False)[shard_item.rows]
     npz.close()
 
     x = np.concatenate([ill, ont], axis=1)

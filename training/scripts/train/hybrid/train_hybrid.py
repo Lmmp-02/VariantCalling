@@ -57,6 +57,7 @@ from training.models import (
     MLP,
 )
 from training.scripts.train.shared_data import (  # noqa: E402
+    check_input_features,
     build_partition_index_hybrid,
     load_hybrid_shard_features,
     load_resolved_split,
@@ -293,6 +294,7 @@ def main():
     add_masks = bool(hyper.get("add_masks", True))
     use_class_weights = bool(hyper.get("use_class_weights", False))
     max_class_weight = float(hyper.get("max_class_weight", 10.0))
+    input_features = check_input_features(hyper.get("input_features", "embeddings"))
     save_best_on = str(selection.get("save_best_on", "val_macro_f1"))
 
     if arch not in {"mlp", "linear"}:
@@ -326,12 +328,13 @@ def main():
     print(f"[Family]     {model_family}")
     print(f"[Device]     {device}")
     print(f"[Config]     {experiment_config_path}")
+    print(f"[Features]   input_features={input_features}")
     print(f"[Split]      {resolved_split_path}")
     print(f"[SaveDir]    {save_dir}")
 
-    train_idx = build_partition_index_hybrid(rs, "train", add_masks=add_masks)
-    val_idx = build_partition_index_hybrid(rs, "val", add_masks=add_masks)
-    test_idx = build_partition_index_hybrid(rs, "test", add_masks=add_masks)
+    train_idx = build_partition_index_hybrid(rs, "train", add_masks=add_masks, input_features=input_features)
+    val_idx = build_partition_index_hybrid(rs, "val", add_masks=add_masks, input_features=input_features)
+    test_idx = build_partition_index_hybrid(rs, "test", add_masks=add_masks, input_features=input_features)
 
     print_partition_summary(summarize_partition(train_idx))
     print_partition_summary(summarize_partition(val_idx))
@@ -386,6 +389,7 @@ def main():
         "resolved": {
             "experiment_id": experiment_id,
             "input_dim": in_dim,
+            "input_features": input_features,
             "n_classes": 3,
             "device": str(device),
             "loss": "CrossEntropyLoss",
@@ -550,6 +554,7 @@ def main():
                 "experiment_id": experiment_id,
                 "model_family": model_family,
                 "input_dim": in_dim,
+                "input_features": input_features,
                 "n_classes": 3,
                 "arch": arch,
                 "hidden": hidden,
@@ -585,6 +590,7 @@ def main():
         "experiment_id": experiment_id,
         "model_family": model_family,
         "input_dim": in_dim,
+        "input_features": input_features,
         "n_classes": 3,
         "arch": arch,
         "hidden": hidden,

@@ -550,6 +550,7 @@ def infer_checkpoint_model_info(ckpt: Dict[str, Any], config: Dict[str, Any]) ->
     hidden = int(ckpt.get("hidden", resolved.get("hidden", 512)))
     dropout = float(ckpt.get("dropout", resolved.get("dropout", 0.1)))
     add_masks = bool(ckpt.get("add_masks", resolved.get("add_masks", True)))
+    input_features = str(ckpt.get("input_features", resolved.get("input_features", "embeddings"))).lower()
 
     if input_dim <= 0:
         raise SystemExit("[ERROR] Cannot infer input_dim from checkpoint/config.")
@@ -564,6 +565,7 @@ def infer_checkpoint_model_info(ckpt: Dict[str, Any], config: Dict[str, Any]) ->
         "hidden": hidden,
         "dropout": dropout,
         "add_masks": add_masks,
+        "input_features": input_features,
     }
 
 
@@ -1026,7 +1028,7 @@ def main():
 
         if info["model_kind"] == "unimodal":
             modality = info["modality"]
-            index = build_partition_index_unimodal(rs, args.partition, modality)
+            index = build_partition_index_unimodal(rs, args.partition, modality, input_features=info["input_features"])
             print_partition_summary(summarize_partition(index))
             print()
 
@@ -1050,7 +1052,7 @@ def main():
             model_family = info["model_family"]
             add_masks = bool(info["add_masks"])
 
-            index = build_partition_index_hybrid(rs, args.partition, add_masks=add_masks)
+            index = build_partition_index_hybrid(rs, args.partition, add_masks=add_masks, input_features=info["input_features"])
             print_partition_summary(summarize_partition(index))
             print()
 

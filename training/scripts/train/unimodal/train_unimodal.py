@@ -45,6 +45,7 @@ if str(REPO_ROOT) not in sys.path:
 from training.metrics import cm_3, metrics_from_cm_3
 from training.models import LinearHead, MLP
 from training.scripts.train.shared_data import (  # noqa: E402
+    check_input_features,
     build_partition_index_unimodal,
     load_resolved_split,
     load_unimodal_shard_features,
@@ -253,6 +254,7 @@ def main():
     arch = str(hyper.get("arch", "mlp")).lower()
     use_class_weights = bool(hyper.get("use_class_weights", False))
     max_class_weight = float(hyper.get("max_class_weight", 10.0))
+    input_features = check_input_features(hyper.get("input_features", "embeddings"))
     save_best_on = str(selection.get("save_best_on", "val_macro_f1"))
 
     if arch not in {"mlp", "linear"}:
@@ -286,13 +288,14 @@ def main():
     print(f"[Modality]   {modality}")
     print(f"[Device]     {device}")
     print(f"[Config]     {experiment_config_path}")
+    print(f"[Features]   input_features={input_features}")
     print(f"[Split]      {resolved_split_path}")
     print(f"[SaveDir]    {save_dir}")
 
     # Build partition indices (memory-safe, shard-based)
-    train_idx = build_partition_index_unimodal(rs, "train", modality)
-    val_idx = build_partition_index_unimodal(rs, "val", modality)
-    test_idx = build_partition_index_unimodal(rs, "test", modality)
+    train_idx = build_partition_index_unimodal(rs, "train", modality, input_features=input_features)
+    val_idx = build_partition_index_unimodal(rs, "val", modality, input_features=input_features)
+    test_idx = build_partition_index_unimodal(rs, "test", modality, input_features=input_features)
 
     print_partition_summary(summarize_partition(train_idx))
     print_partition_summary(summarize_partition(val_idx))
@@ -335,6 +338,7 @@ def main():
         "resolved": {
             "experiment_id": experiment_id,
             "input_dim": in_dim,
+            "input_features": input_features,
             "n_classes": 3,
             "device": str(device),
             "loss": "CrossEntropyLoss",
@@ -482,6 +486,7 @@ def main():
                 "experiment_id": experiment_id,
                 "modality": modality,
                 "input_dim": in_dim,
+                "input_features": input_features,
                 "n_classes": 3,
                 "arch": arch,
                 "hidden": hidden,
@@ -512,6 +517,7 @@ def main():
         "experiment_id": experiment_id,
         "modality": modality,
         "input_dim": in_dim,
+        "input_features": input_features,
         "n_classes": 3,
         "arch": arch,
         "hidden": hidden,
