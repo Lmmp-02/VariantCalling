@@ -2,7 +2,7 @@
 
 Companion repository for the paper *When Does a Second Sequencing Technology Help? Late Fusion of Technology-Specific DeepVariant Models under Reduced Coverage*.
 
-**Authors:** [to be confirmed]
+**Authors:** Javier Lázaro, Luisa Meseguer, Mario Solis, Alejandro Borrallo, Elena Alvarez
 
 **Status:** preprint draft, October 2026
 
@@ -57,4 +57,4 @@ The benchmark uses GIAB HG002–HG005 Illumina data and GIAB v4.2.1 truth/confid
 
 ## Citation and licences
 
-Code in this repository is released under the [MIT licence](LICENSE). The Zenodo dataset is released under **CC BY 4.0** and has DOI [`10.5281/zenodo.23804374`](https://doi.org/10.5281/zenodo.23804374). Citation metadata for the software and preferred paper citation are in [`CITATION.cff`](CITATION.cff); author and paper-DOI fields remain placeholders until the manuscript metadata is final.
+Code in this repository is released under the [MIT licence](LICENSE). The Zenodo dataset is released under **CC BY 4.0** and has DOI [`10.5281/zenodo.23804374`](https://doi.org/10.5281/zenodo.23804374). Citation metadata for the software and preferred paper citation are in [`CITATION.cff`](CITATION.cff). The archived paper artefacts are cited separately through the Zenodo DOI above.
