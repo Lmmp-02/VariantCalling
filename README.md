@@ -1,4 +1,4 @@
-# VariantCalling — reproducibility companion
+# DeepVariant Late Fusion — Reproducibility Companion
 
 Companion repository for the paper *When Does a Second Sequencing Technology Help? Late Fusion of Technology-Specific DeepVariant Models under Reduced Coverage*.
 
