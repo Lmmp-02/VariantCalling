@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite the preferred paper below."
-title: "VariantCalling"
+title: "DeepVariant Late Fusion — Reproducibility Companion"
 type: software
 authors:
   - family-names: "Lázaro"
